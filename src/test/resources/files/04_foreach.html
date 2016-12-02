@@ -1,0 +1,13 @@
+<!DOCTYPE html SYSTEM "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Thymeleaf Fragment Definition</title>
+    </head>
+    <body>
+        <th:block th:each="anItem, statusVar : ${itemlist}">First Form here</th:block>
+        <th:block th:each="anItem : ${itemlist}">Second Form here</th:block>
+        <th:block th:each="anotherItem : ${#numbers.sequence(1,10,2)}">Third Form here</th:block>
+        <th:block th:each="anotherItem : ${#numbers.sequence(1,10)}">Fourth Form here</th:block>
+        <th:block th:each="anotherItem, statusVar : ${#numbers.sequence(1,10,2)}">Fifth Form here</th:block>
+    </body>
+</html>

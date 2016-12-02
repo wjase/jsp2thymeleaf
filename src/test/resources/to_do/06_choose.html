@@ -1,0 +1,21 @@
+<!DOCTYPE html SYSTEM "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:cn="http://www.cybernostics.com">
+    <head>
+        <title><c:choose> Tag Example</title>
+    </head>
+    <body>
+    <cn:set var="salary" scope="session" value="${2000*2}"/>
+    <p>Your salary is : <th:span th:text="${salary}">Salary</th:span></p>
+    <cn:choose>
+        <cn:when th:if="${salary <= 0}">
+            Salary is very low to survive.
+        </th:when>
+        <th:when th:if="${salary > 1000}">
+            Salary is very good.
+        </th:when>
+        <th:otherwise th:if="${true}">
+            No comment sir...
+        </th:otherwise>
+    </cn:choose>
+</body>
+</html>
