@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.converters.jstl;
+package com.cybernostics.jsp2thymeleaf.converters.jstl.core;
 
 import com.cybernostics.jsp2thymeleaf.api.JspTagElementConverter;
 import java.util.Arrays;
@@ -19,7 +19,7 @@ public class ForeachJspConverter extends JspTagElementConverter
 
     public ForeachJspConverter()
     {
-        super("c:foreach", "block");
+        super("foreach", "block");
         removesAtributes("var", "begin", "end", "step", "varStatus", "items", "step");
         addsAttributes((currentValues)
                 -> Arrays.asList(

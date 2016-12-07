@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.converters.jstl;
+package com.cybernostics.jsp2thymeleaf.converters.jstl.core;
 
 import com.cybernostics.forks.jsp2x.JspTree;
 import com.cybernostics.jsp2thymeleaf.api.JspConverterContext;
 import static com.cybernostics.jsp2thymeleaf.api.NewAttributeBuilder.humanReadable;
 import com.cybernostics.jsp2thymeleaf.api.JspTagElementConverter;
+import static com.cybernostics.jsp2thymeleaf.api.JspTreeUtils.getAttribute;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +26,7 @@ public class CoutJspConverter extends JspTagElementConverter
 {
     public CoutJspConverter()
     {
-        super("c:out","span");
+        super("out","span");
         removesAtributes("value");
         addsAttributes((currentValues)->Arrays.asList(new Attribute("text", currentValues.get("value"), thymeleafNS)));
     }
