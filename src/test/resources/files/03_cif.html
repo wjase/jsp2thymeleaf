@@ -4,6 +4,7 @@
         <title>Thymeleaf Fragment Definition</title>
     </head>
     <body>
-        <th:block th:if="${not empty param.amount}" id="barry">Some text here</th:block>
-</body>
+        <th:block th:if="${!param.amount}" id="barry">Some text here</th:block>
+        <th:block th:if="${#strings.contains(name,searchString)}">Boo</th:block>
+    </body>
 </html>

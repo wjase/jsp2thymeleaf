@@ -6,11 +6,11 @@
 package com.cybernostics.jsp2thymeleaf.converters.identity;
 
 import com.cybernostics.forks.jsp2x.JspTree;
-import com.cybernostics.jsp2thymeleaf.api.DomTag;
-import com.cybernostics.jsp2thymeleaf.api.ElementConverter;
-import com.cybernostics.jsp2thymeleaf.api.JspTreeConverter;
-import com.cybernostics.jsp2thymeleaf.api.TagConverter;
-import com.cybernostics.jsp2thymeleaf.api.TagConverterSource;
+import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
+import com.cybernostics.jsp2thymeleaf.api.elements.CopyElementConverter;
+import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverter;
+import com.cybernostics.jsp2thymeleaf.api.elements.TagConverter;
+import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
 import java.util.Optional;
 
 /**
@@ -20,7 +20,7 @@ import java.util.Optional;
 public class DefaultElementConverterSource extends TagConverterSource
 {
     private static TagConverter[] tags = new TagConverter[0];
-    ElementConverter converter = new ElementConverter();
+    CopyElementConverter converter = new CopyElementConverter();
     
     public DefaultElementConverterSource()
     {
@@ -34,7 +34,7 @@ public class DefaultElementConverterSource extends TagConverterSource
     }
 
     @Override
-    public Optional<JspTreeConverter> converterFor(DomTag domTag)
+    public Optional<JspTreeConverter> converterFor(PrefixedName domTag)
     {
         return Optional.of(converter);
     }

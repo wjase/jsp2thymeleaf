@@ -5,8 +5,7 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.core;
 
-import com.cybernostics.jsp2thymeleaf.api.JspTagElementConverter;
-import static com.cybernostics.jsp2thymeleaf.api.JspTreeUtils.elEscape;
+import com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter;
 import java.util.Arrays;
 import org.jdom2.Attribute;
 
@@ -23,7 +22,7 @@ public class CifJspConverter extends JspTagElementConverter
         removesAtributes("test");
         addsAttributes((currentValues)
                 -> Arrays.asList(new Attribute("if",
-                        elEscape(currentValues.get("test")), thymeleafNS)));
+                        currentValues.get("test"), thymeleafNS)));
 
     }
 

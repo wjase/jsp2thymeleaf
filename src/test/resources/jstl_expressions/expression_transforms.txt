@@ -1,0 +1,30 @@
+${aValue} ==> ${aValue}
+Some Text ==> Some Text
+${fn:contains(param,"barry")} ==> ${#strings.contains(param,"barry")}
+${fn:containsIgnoreCase(param,"barry")} ==> ${#strings.containsIgnoreCase(param,"barry")}
+${fn:endsWith()}
+${fn:escapeXml()}
+${fn:indexOf()}
+${fn:startsWith()}
+${fn:substring()}
+${fn:substringAfter()}
+${fn:substringBefore()}
+${fn:toLowerCase()}
+${fn:toUpperCase()}
+${fn:trim()}
+${fn:join()}
+${fn:length()}
+${fn:replace()}
+${fn:split()}
+${fmt:bundle}
+${fmt:formatDate}
+${fmt:formatNumber}
+${fmt:message}
+${fmt:param}
+${fmt:parseDate}
+${fmt:parseNumber}
+${fmt:requestEncoding}
+${fmt:setBundle}
+${fmt:setLocale}
+${fmt:setTimeZone}
+${fmt:timeZone}

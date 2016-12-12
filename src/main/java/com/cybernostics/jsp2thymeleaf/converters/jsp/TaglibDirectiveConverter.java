@@ -6,14 +6,17 @@
 package com.cybernostics.jsp2thymeleaf.converters.jsp;
 
 import com.cybernostics.forks.jsp2x.JspTree;
-import com.cybernostics.jsp2thymeleaf.ActiveTaglibConverters;
-import com.cybernostics.jsp2thymeleaf.AvailableTaglibConverters;
-import com.cybernostics.jsp2thymeleaf.api.JspConverterContext;
-import com.cybernostics.jsp2thymeleaf.api.JspTreeConverter;
-import static com.cybernostics.jsp2thymeleaf.api.JspTreeUtils.getAttribute;
-import com.cybernostics.jsp2thymeleaf.api.TagConverterSource;
+import com.cybernostics.jsp2thymeleaf.AvailableConverters;
+import com.cybernostics.jsp2thymeleaf.api.elements.ActiveTaglibConverters;
+import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverter;
+import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverterContext;
+import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
+import com.cybernostics.jsp2thymeleaf.api.expressions.ActiveExpressionConverters;
+import com.cybernostics.jsp2thymeleaf.api.expressions.FunctionConverterSource;
+import static com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils.getAttribute;
 import static java.util.Collections.EMPTY_LIST;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import org.jdom2.Content;
 
@@ -25,17 +28,30 @@ public class TaglibDirectiveConverter implements JspTreeConverter
 {
 
     @Override
-    public List<Content> processElement(JspTree jspTree, JspConverterContext context)
+    public List<Content> processElement(JspTree jspTree, JspTreeConverterContext context)
     {
-        String prefix = getAttribute(jspTree,"prefix")
+        String prefix = getAttribute(jspTree, "prefix")
                 .map(JspTree::value)
                 .orElseThrow(rex("missing taglib prefix attribute"));
-        String uri = getAttribute(jspTree,"uri")
+        String uri = getAttribute(jspTree, "uri")
                 .map(JspTree::value)
                 .orElseThrow(rex("Missing taglib uri attribute"));
-        
-        final TagConverterSource taglibConverter = AvailableTaglibConverters.forUri(uri);
-        ActiveTaglibConverters.addTaglibConverter(prefix, taglibConverter);
+
+        final Optional<TagConverterSource> taglibConverter = AvailableConverters.elementConverterforUri(uri);
+        if (taglibConverter.isPresent())
+        {
+            ActiveTaglibConverters.addTaglibConverter(prefix, taglibConverter.get());
+        } else
+        {
+            final Optional<FunctionConverterSource> functionConverter = AvailableConverters.functionConverterforUri(uri);
+            ActiveExpressionConverters.addTaglibConverter(prefix,
+                    functionConverter
+                            .orElseThrow(rex("No converters for uri:"
+                                    + uri
+                                    + ". Add converter jars or scripts to classpath ")));
+
+        }
+
         return EMPTY_LIST;
     }
 
@@ -45,7 +61,8 @@ public class TaglibDirectiveConverter implements JspTreeConverter
         return true;
     }
 
-    public static Supplier<RuntimeException> rex(String message){
-        return ()-> new RuntimeException(message);
+    public static Supplier<RuntimeException> rex(String message)
+    {
+        return () -> new RuntimeException(message);
     }
 }

@@ -5,7 +5,7 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.core;
 
-import com.cybernostics.jsp2thymeleaf.api.JspTagElementConverter;
+import com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter;
 import java.util.Arrays;
 import java.util.Map;
 import org.jdom2.Attribute;
@@ -39,11 +39,11 @@ public class ForeachJspConverter extends JspTagElementConverter
         String optionalStatus = fmtIfPresent(atts, "varStatus", ", %s", "");
 
         String items = atts.getOrDefault("items",
-                String.format("#numbers.sequence(%s,%s%s)",
+                String.format("${#numbers.sequence(%s,%s%s)}",
                         atts.get("begin"),
                         atts.get("end"),
                         fmtIfPresent(atts, "step", ",%s", "")));
-        return String.format("%s%s : ${%s}",
+        return String.format("%s%s : %s",
                 atts.get("var"),
                 optionalStatus,
                 items);

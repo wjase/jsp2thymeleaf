@@ -6,15 +6,15 @@
 package com.cybernostics.jsp2thymeleaf.converters.jsp;
 
 import com.cybernostics.forks.jsp2x.JspTree;
-import com.cybernostics.jsp2thymeleaf.api.ConverterSource;
-import com.cybernostics.jsp2thymeleaf.api.JspTreeConverter;
+import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverter;
 import java.util.Optional;
+import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverterSource;
 
 /**
  *
  * @author jason
  */
-public class JSPDirectiveConverterSource implements ConverterSource
+public class JSPDirectiveConverterSource implements JspTreeConverterSource
 {
 
     private final TaglibDirectiveConverter taglibDirectiveConverter = new TaglibDirectiveConverter();

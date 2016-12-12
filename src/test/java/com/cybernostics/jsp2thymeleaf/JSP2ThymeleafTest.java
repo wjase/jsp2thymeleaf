@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -16,47 +15,60 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  *
  * @author jason
  */
+@RunWith(Parameterized.class)
 public class JSP2ThymeleafTest
 {
+
+    private static Logger LOG = Logger.getLogger(JSP2ThymeleafTest.class.getName());
+
+    private final File jspFile;
+
+    public JSP2ThymeleafTest(String name, File JSPFile)
+    {
+        this.jspFile = JSPFile;
+
+    }
+
     @Test
-    public void shouldConvertJSPToThymeleaf(){
-        
+    public void JSPToThymeleafShouldConvert()
+    {
+
         JSP2Thymeleaf jSP2Thymeleaf = new JSP2Thymeleaf();
         jSP2Thymeleaf.setShowBanner(false);
-        for ( File jspFile : getJspFiles() )
+        try
         {
-            try
-            {
-                ByteArrayOutputStream convertedFile = new ByteArrayOutputStream();
-                File expectedThymeleafFilename = new File(jspFile.getAbsolutePath().replaceAll(".jsp$", ".html"));
-                String expectedContent = FileUtils.readFileToString(expectedThymeleafFilename, Charset.defaultCharset());
-                
-                System.out.println("Test "+jspFile.getName() + " -> " + jspFile.getName().replaceAll(".jsp$", ".html"));
-                
-                jSP2Thymeleaf.convert(new FileInputStream(jspFile), convertedFile);
-                final String convertedContent = convertedFile.toString();
-                System.out.println(convertedContent);
-                assertThat(convertedContent.replaceAll("\\s+", " "), is(expectedContent.replaceAll("\\s+", " ")));
-            } catch (IOException ex)
-            {
-                Logger.getLogger(JSP2ThymeleafTest.class.getName()).log(Level.SEVERE, null, ex);
-                Assert.fail("exception thrown");
-            }
+            ByteArrayOutputStream convertedFile = new ByteArrayOutputStream();
+            File expectedThymeleafFilename = new File(jspFile.getAbsolutePath().replaceAll(".jsp$", ".html"));
+            String expectedContent = FileUtils.readFileToString(expectedThymeleafFilename, Charset.defaultCharset());
+
+            jSP2Thymeleaf.convert(new FileInputStream(jspFile), convertedFile);
+            final String convertedContent = convertedFile.toString();
+            LOG.info("\n" + convertedContent);
+            assertThat(convertedContent.replaceAll("\\s+", " "), is(expectedContent.replaceAll("\\s+", " ")));
+        } catch (IOException ex)
+        {
+            Logger.getLogger(JSP2ThymeleafTest.class.getName()).log(Level.SEVERE, null, ex);
+            Assert.fail("exception thrown");
         }
     }
-     
-    private List<File> getJspFiles(){
-        final URL resource = getClass().getClassLoader().getResource("files");
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Iterable<Object[]> data()
+    {
+        final URL resource = JSP2ThymeleafTest.class.getClassLoader().getResource("files");
         final File file = new File(resource.getFile());
         return Arrays.asList(file.listFiles())
                 .stream()
                 .filter(it -> it.getName().contains("jsp"))
                 .sorted()
+                .map(eachFile -> Arrays.asList((Object) eachFile.getName(), (Object) eachFile).toArray())
                 .collect(Collectors.toList());
     }
 }

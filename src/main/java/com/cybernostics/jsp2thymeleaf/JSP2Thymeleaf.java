@@ -5,32 +5,27 @@
  */
 package com.cybernostics.jsp2thymeleaf;
 
-import com.cybernostics.jsp2thymeleaf.converters.jsp.JSPDirectiveConverterSource;
-import com.cybernostics.jsp2thymeleaf.api.JspConverterContext;
-import com.cybernostics.jsp2thymeleaf.api.JspTreeConverter;
 import com.cybernostics.forks.jsp2x.JspLexer;
 import com.cybernostics.forks.jsp2x.JspParser;
 import static com.cybernostics.forks.jsp2x.JspParser.*;
+import com.cybernostics.forks.jsp2x.JspTree;
+import static com.cybernostics.jsp2thymeleaf.api.elements.ActiveTaglibConverters.addTaglibConverter;
+import static com.cybernostics.jsp2thymeleaf.api.elements.ActiveTaglibConverters.forPrefix;
+import static com.cybernostics.jsp2thymeleaf.AvailableConverters.scanForConverters;
+import com.cybernostics.jsp2thymeleaf.api.elements.CopyElementConverter;
+import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverter;
+import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverterContext;
+import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverterSource;
+import static com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils.doWithChildren;
+import static com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils.nameOrNone;
+import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
+import static com.cybernostics.jsp2thymeleaf.api.util.PrefixedName.prefixedNameFor;
+import com.cybernostics.jsp2thymeleaf.converters.identity.DefaultElementConverterSource;
+import com.cybernostics.jsp2thymeleaf.converters.jsp.JSPDirectiveConverterSource;
+import static com.cybernostics.jsp2thymeleaf.converters.jsp.TaglibDirectiveConverter.rex;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.apache.commons.compress.utils.IOUtils;
-import com.cybernostics.forks.jsp2x.JspTree;
-import static com.cybernostics.jsp2thymeleaf.ActiveTaglibConverters.addTaglibConverter;
-import static com.cybernostics.jsp2thymeleaf.ActiveTaglibConverters.forPrefix;
-import static com.cybernostics.jsp2thymeleaf.AvailableTaglibConverters.scanForConverters;
-import com.cybernostics.jsp2thymeleaf.api.DomTag;
-import com.cybernostics.jsp2thymeleaf.api.ElementConverter;
-import static com.cybernostics.jsp2thymeleaf.api.JspTreeUtils.doWithChildren;
-import static com.cybernostics.jsp2thymeleaf.api.JspTreeUtils.nameOrNone;
-import com.cybernostics.jsp2thymeleaf.api.TagConverterSource;
-import com.cybernostics.jsp2thymeleaf.converters.identity.DefaultElementConverterSource;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,7 +33,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
+import org.apache.commons.compress.utils.IOUtils;
 import org.jdom2.Comment;
 import org.jdom2.Content;
 import org.jdom2.DocType;
@@ -48,28 +49,27 @@ import org.jdom2.Namespace;
 import org.jdom2.Text;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import org.jdom2.output.support.AbstractXMLOutputProcessor;
-import org.jdom2.output.support.FormatStack;
 
 /**
  *
  * @author jason
  */
-public class JSP2Thymeleaf implements JspConverterContext
+public class JSP2Thymeleaf implements JspTreeConverterContext
 {
 
     public static final Logger logger = Logger.getLogger(JSP2Thymeleaf.class.getName());
     private boolean showBanner;
-    private JspTreeConverter elementConverter = new ElementConverter();
+    private JspTreeConverter elementConverter = new CopyElementConverter();
     private Map<String, JspTreeConverter> tagToConverterMap = new HashMap<>();
     private final Namespace thns = Namespace.getNamespace("th", "http://www.thymeleaf.org");
     private final Namespace xmlns = Namespace.getNamespace("http://www.w3.org/1999/xhtml");
     private final Pattern whitespace = Pattern.compile("^\\s+$");
     private JSPDirectiveConverterSource jspDirectives = new JSPDirectiveConverterSource();
+
     public JSP2Thymeleaf()
     {
         scanForConverters();
-        addTaglibConverter("",new DefaultElementConverterSource());
+        addTaglibConverter("", new DefaultElementConverterSource());
     }
 
     public void setShowBanner(boolean showBanner)
@@ -83,7 +83,6 @@ public class JSP2Thymeleaf implements JspConverterContext
         {
             final JspTree jspTree = parse(new String(IOUtils.toByteArray(inputStream)));
             logger.log(Level.FINE, jspTree.toStringTree());
-
             writeTree(jspTree, outputStream);
         } catch (IOException ex)
         {
@@ -115,7 +114,6 @@ public class JSP2Thymeleaf implements JspConverterContext
 
             XMLOutputter out = new XMLOutputter(
                     Format
-                            //                            .getRawFormat()
                             .getPrettyFormat()
                             .setTextMode(Format.TextMode.NORMALIZE)
                             .setLineSeparator(NEWLINE)
@@ -129,133 +127,8 @@ public class JSP2Thymeleaf implements JspConverterContext
 
     }
 
-    private AbstractXMLOutputProcessor getFormatter()
-    {
-        return //                            .setTextMode(Format.TextMode.PRESERVE),
-                new AbstractXMLOutputProcessor()
-        {
-            @Override
-            protected void printDocType(Writer out, FormatStack fstack, DocType docType) throws IOException
-            {
-                super.printDocType(out, fstack, docType);
-                out.append(NEWLINE);
-
-            }
-        };
-    }
     public static final String NEWLINE = System.getProperty("line.separator");
 
-//    private List<Content> convert(JspTree jspTree, Element parent){
-//        final int type = jspTree.getType();
-//        switch (type)
-//        {
-//            case PCDATA:
-//                contentForPCData(jspTree);
-//                break;
-//            case JSP_DIRECTIVE:
-//                contentForJspDirective(jspTree, doc, parent);
-//                break;
-//            case ELEMENT:
-//                contentForElement(jspTree, doc, parent);
-//                break;
-//            case ATTRIBUTES:
-//                contentForAttributes(jspTree, doc, parent);
-//                break;
-//            case NAMECHAR:
-//                contentForNameChar(jspTree, doc, parent);
-//                break;
-//            case LETTER:
-//                contentForLetter(jspTree, doc, parent);
-//                break;
-//            case TAG_EMPTY_CLOSE:
-//                contentForTagEmptyClose(jspTree, doc, parent);
-//                break;
-//            case COMMENT:
-//                contentForComment(jspTree, doc, parent);
-//                break;
-//            case JSP_DIRECTIVE_CLOSE:
-//                contentForDirectiveClose(jspTree, doc, parent);
-//                break;
-//
-//            case EL_EXPR:
-//                contentForElExpression(jspTree, doc, parent);
-//                break;
-//
-//            case WHITESPACE:
-//                contentForWhitespace(jspTree, doc, parent);
-//                break;
-//
-//            case JSP_SCRIPTLET:
-//                contentForScriptlet(jspTree, doc, parent);
-//                break;
-//
-//            case JSP_DIRECTIVE_OPEN:
-//                contentForJspDirectiveOpen(jspTree, doc, parent);
-//                break;
-//
-//            case TAG_START_OPEN:
-//                contentForTagStartOpen(jspTree, doc, parent);
-//                break;
-//
-//            case EOF:
-//                contentForEof(jspTree, doc, parent);
-//                break;
-//
-//            case ATTRIBUTE:
-//                contentForAttribute(jspTree, doc, parent);
-//                break;
-//
-//            case ATTR_VALUE_CLOSE:
-//                contentForAttributeValueClose(jspTree, doc, parent);
-//                break;
-//
-//            case GENERIC_ID:
-//                contentForGenericId(jspTree, doc, parent);
-//                break;
-//
-//            case JSP_COMMENT:
-//                contentForJspComment(jspTree, doc, parent);
-//                break;
-//
-//            case ATTR_EQ:
-//                contentForAttributeEq(jspTree, doc, parent);
-//                break;
-//
-//            case TAG_END_OPEN:
-//                contentForTagEndOpen(jspTree, doc, parent);
-//                break;
-//
-//            case DIGIT:
-//                contentForDigit(jspTree, doc, parent);
-//                break;
-//
-//            case JSP_EXPRESSION:
-//                contentForJspExpression(jspTree, doc, parent);
-//                break;
-//
-//            case ATTR_VALUE_OPEN:
-//                contentForAttributevalueOpen(jspTree, doc, parent);
-//                break;
-//
-//            case PROCESSING_INSTRUCTION:
-//                contentForProcessingInstruction(jspTree, doc, parent);
-//                break;
-//
-//            case DOCTYPE_DEFINITION:
-//                contentForDoctypeDefinition(jspTree, doc, parent);
-//                break;
-//
-//            case TAG_CLOSE:
-//                contentForTagClose(jspTree, doc, parent);
-//                break;
-//            case 0:
-//                System.out.println("Zero tree node type, recursing");
-//            default:
-//                System.out.println("New type"+type);
-//        }
-//        doWithChildren(jspTree, (eachChild) -> writeTree(eachChild, doc, null));
-//
-//    }
     private static Boolean isHtmlElement(Content content)
     {
         return content instanceof Element
@@ -302,7 +175,7 @@ public class JSP2Thymeleaf implements JspConverterContext
         }
     }
 
-    public List<Content> contentFor(JspTree jspTree, JspConverterContext context)
+    public List<Content> contentFor(JspTree jspTree, JspTreeConverterContext context)
     {
         List<Content> contents = new ArrayList<>();
         logger.fine(nameOrNone(jspTree));
@@ -327,12 +200,26 @@ public class JSP2Thymeleaf implements JspConverterContext
                 contents.add(new Text(jspTree.getText()));
                 traversedChildren = true;
                 break;
+//            case DOCTYPE_DEFINITION:
+//                break;
+//            case EL_EXPR:
+//                break;
+//            case COMMENT:
+//                break;
+//            case JSP_EXPRESSION:
+//                break;
+//            case WHITESPACE:
+//                break;
+//            case JSP_SCRIPTLET:
+//                break;
+//            case JSP_COMMENT:
+//                break;
             default:
                 logger.fine(String.format("No action for: %d %s",
                         jspTree.getType(),
                         jspTree.toString()));
         }
-        
+
         if (!traversedChildren)
         {
             doWithChildren(jspTree, (i, eachChild) -> contents.addAll(contentFor(eachChild, this)));
@@ -346,24 +233,24 @@ public class JSP2Thymeleaf implements JspConverterContext
         switch (type)
         {
             case ELEMENT:
-                DomTag domTag = new DomTag(jspTree.name());
-                TagConverterSource converterSource1 = getConverterSource(domTag)
+                PrefixedName domTag = prefixedNameFor(jspTree.name());
+                JspTreeConverterSource converterSource1 = getConverterSource(domTag)
                         .orElseThrow(missing(domTag));
-                
-                return converterSource1.converterFor(domTag)
+
+                return converterSource1.converterFor(jspTree)
                         .orElseThrow(missing(domTag));
-                
+
             case JSP_DIRECTIVE:
                 return jspDirectives.converterFor(jspTree)
-                        .orElseThrow(()->new RuntimeException("No jsp directive converter found"+jspTree.toStringTree()));
-                
+                        .orElseThrow(() -> new RuntimeException("No jsp directive converter found" + jspTree.toStringTree()));
+
         }
         return elementConverter;
     }
 
-    private static Supplier<RuntimeException> missing(DomTag domTag)
+    private static Supplier<RuntimeException> missing(PrefixedName domTag)
     {
-        return ()->new RuntimeException("No converter source found for tag " + domTag);
+        return rex("No converter source found for tag " + domTag);
     }
 
     private Element createFragmentDef(List<Content> contents)
@@ -386,7 +273,7 @@ public class JSP2Thymeleaf implements JspConverterContext
         return html;
     }
 
-    private Optional<TagConverterSource> getConverterSource(DomTag domTag)
+    private Optional<JspTreeConverterSource> getConverterSource(PrefixedName domTag)
     {
         return forPrefix(domTag.getPrefix());
     }

@@ -5,8 +5,8 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.core;
 
-import com.cybernostics.jsp2thymeleaf.api.TagConverter;
-import com.cybernostics.jsp2thymeleaf.api.TagConverterSource;
+import com.cybernostics.jsp2thymeleaf.api.elements.TagConverter;
+import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
 
 /**
  *
