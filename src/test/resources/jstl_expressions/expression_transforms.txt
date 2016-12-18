@@ -2,29 +2,30 @@ ${aValue} ==> ${aValue}
 Some Text ==> Some Text
 ${fn:contains(param,"barry")} ==> ${#strings.contains(param,"barry")}
 ${fn:containsIgnoreCase(param,"barry")} ==> ${#strings.containsIgnoreCase(param,"barry")}
-${fn:endsWith()}
-${fn:escapeXml()}
-${fn:indexOf()}
-${fn:startsWith()}
-${fn:substring()}
-${fn:substringAfter()}
-${fn:substringBefore()}
-${fn:toLowerCase()}
-${fn:toUpperCase()}
-${fn:trim()}
-${fn:join()}
-${fn:length()}
-${fn:replace()}
-${fn:split()}
-${fmt:bundle}
-${fmt:formatDate}
-${fmt:formatNumber}
-${fmt:message}
-${fmt:param}
-${fmt:parseDate}
-${fmt:parseNumber}
-${fmt:requestEncoding}
-${fmt:setBundle}
-${fmt:setLocale}
-${fmt:setTimeZone}
-${fmt:timeZone}
+${fn:endsWith(param,"barry")} ==> ${#strings.endsWith(param,"barry")}
+${fn:startsWith(param,"barry")} ==> ${#strings.startsWith(param,"barry")}
+${fn:escapeXml(param)} ==> ${#strings.escapeXml(param)}
+${fn:indexOf(param)} ==> ${#strings.indexOf(param)}
+${fn:substring(target,beginIndex,endIndex)} ==> ${#strings.substring(target,beginIndex,endIndex)}
+${fn:substring(target,beginIndex)} ==> ${#strings.substring(target,beginIndex)}
+${fn:substringAfter(target,substr)} ==> ${#strings.substringAfter(target,substr)}
+${fn:substringBefore(target,substr)} ==> ${#strings.substringBefore(target,substr)}
+${fn:toLowerCase(param)} ==> ${#strings.toLowerCase(param)}
+${fn:toUpperCase(param)} ==> ${#strings.toUpperCase(param)}
+${fn:trim(param)} ==> ${#strings.trim(param)}
+${fn:join(param,param1)} ==> ${#strings.join(param,param1)}
+${fn:length(param)} ==> ${#strings.length(param)}
+${fn:replace(param,param1)} ==> ${#strings.replace(param,param1)}
+${fn:split(param,param1)} ==> ${#strings.split(param,param1)}
+#${fmt:bundle(param)} ==> ${#strings.(param)}
+#${fmt:formatDate(param)} ==> ${#strings.(param)}
+#${fmt:formatNumber(param)} ==> ${#strings.(param)}
+#${fmt:message(param)} ==> ${#strings.(param)}
+#${fmt:param(param)} ==> ${#strings.(param)}
+#${fmt:parseDate(param)} ==> ${#strings.(param)}
+#${fmt:parseNumber(param)} ==> ${#strings.(param)}
+#${fmt:requestEncoding(param)} ==> ${#strings.(param)}
+#${fmt:setBundle(param)} ==> ${#strings.(param)}
+#${fmt:setLocale(param)} ==> ${#strings.(param)}
+#${fmt:setTimeZone(param)} ==> ${#strings.(param)}
+#${fmt:timeZone(param)} ==> ${#strings.(param)}

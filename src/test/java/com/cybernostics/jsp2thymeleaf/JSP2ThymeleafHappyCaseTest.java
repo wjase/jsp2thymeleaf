@@ -23,14 +23,14 @@ import org.junit.runners.Parameterized;
  * @author jason
  */
 @RunWith(Parameterized.class)
-public class JSP2ThymeleafTest
+public class JSP2ThymeleafHappyCaseTest
 {
 
-    private static Logger LOG = Logger.getLogger(JSP2ThymeleafTest.class.getName());
+    private static Logger LOG = Logger.getLogger(JSP2ThymeleafHappyCaseTest.class.getName());
 
     private final File jspFile;
 
-    public JSP2ThymeleafTest(String name, File JSPFile)
+    public JSP2ThymeleafHappyCaseTest(String name, File JSPFile)
     {
         this.jspFile = JSPFile;
 
@@ -54,7 +54,7 @@ public class JSP2ThymeleafTest
             assertThat(convertedContent.replaceAll("\\s+", " "), is(expectedContent.replaceAll("\\s+", " ")));
         } catch (IOException ex)
         {
-            Logger.getLogger(JSP2ThymeleafTest.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(JSP2ThymeleafHappyCaseTest.class.getName()).log(Level.SEVERE, null, ex);
             Assert.fail("exception thrown");
         }
     }
@@ -62,11 +62,12 @@ public class JSP2ThymeleafTest
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data()
     {
-        final URL resource = JSP2ThymeleafTest.class.getClassLoader().getResource("files");
+        final URL resource = JSP2ThymeleafHappyCaseTest.class.getClassLoader().getResource("happy_case_files");
         final File file = new File(resource.getFile());
         return Arrays.asList(file.listFiles())
                 .stream()
                 .filter(it -> it.getName().contains("jsp"))
+                //                .filter(it -> it.getName().contains("cset"))
                 .sorted()
                 .map(eachFile -> Arrays.asList((Object) eachFile.getName(), (Object) eachFile).toArray())
                 .collect(Collectors.toList());

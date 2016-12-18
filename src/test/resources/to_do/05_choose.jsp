@@ -4,7 +4,6 @@
         <title><c:choose> Tag Example</title>
     </head>
     <body>
-        <c:set var="salary" scope="session" value="${2000*2}"/>
         <p>Your salary is : <c:out value="${salary}"/></p>
         <c:choose>
             <c:when test="${salary <= 0}">

@@ -7,15 +7,15 @@
     <cn:set var="salary" scope="session" value="${2000*2}"/>
     <p>Your salary is : <th:span th:text="${salary}">Salary</th:span></p>
     <cn:choose>
-        <cn:when th:if="${salary <= 0}">
+        <cn:when cn:test="${salary <= 0}">
             Salary is very low to survive.
-        </th:when>
-        <th:when th:if="${salary > 1000}">
+        </cn:when>
+        <cn:when cn:test="${salary > 1000}">
             Salary is very good.
-        </th:when>
-        <th:otherwise th:if="${true}">
+        </cn:when>
+        <cn:otherwise cn:test="${true}">
             No comment sir...
-        </th:otherwise>
+        </cn:otherwise>
     </cn:choose>
 </body>
 </html>

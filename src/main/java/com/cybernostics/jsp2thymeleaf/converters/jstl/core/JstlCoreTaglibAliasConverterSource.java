@@ -5,20 +5,21 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.core;
 
-import com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter;
-
 /**
  *
  * @author jason
  */
-public class CifJspConverter extends JspTagElementConverter
+public class JstlCoreTaglibAliasConverterSource extends JstlCoreTaglibConverterSource
 {
 
-    public CifJspConverter()
+    public JstlCoreTaglibAliasConverterSource()
     {
-        super("if", "block");
-        renamesAttribute("test", "if", thymeleafNS);
+    }
 
+    @Override
+    public String getTaglibURI()
+    {
+        return "http://java.sun.com/jsp/jstl/core";
     }
 
 }

@@ -22,7 +22,22 @@ public class JstlCoreFunctionsExpressionConverterSource extends FunctionConverte
     private static String[] simpleConversions =
     {
         "contains",
-        "containsIgnoreCase"
+        "containsIgnoreCase",
+        "endsWith",
+        "startsWith",
+        "escapeXml",
+        "indexOf",
+        "substring",
+        "substring",
+        "substringAfter",
+        "substringBefore",
+        "toLowerCase",
+        "toUpperCase",
+        "trim",
+        "join",
+        "length",
+        "replace",
+        "split"
     };
     private static List<ExpressionFunctionConverter> jstlConverters
             = Arrays.stream(simpleConversions)

@@ -13,7 +13,6 @@ import static com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils.getAttribute;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.jdom2.Attribute;
 import org.jdom2.Content;
 import org.jdom2.Namespace;
 import org.jdom2.Text;
@@ -28,8 +27,7 @@ public class CoutJspConverter extends JspTagElementConverter
     public CoutJspConverter()
     {
         super("out", "span");
-        removesAtributes("value");
-        addsAttributes((currentValues) -> Arrays.asList(new Attribute("text", currentValues.get("value"), thymeleafNS)));
+        renamesAttribute("value", "text", thymeleafNS);
     }
 
     @Override

@@ -60,6 +60,7 @@ public class ExpressionConverterTest
             return Files
                     .lines(Paths.get(resource.toURI()))
                     .filter(line -> line.contains("==>"))
+                    .filter(line -> line.startsWith("$"))
                     .map(line -> line.split(" ==> "))
                     .map(eachList -> Arrays.asList((Object) eachList[0], (Object) eachList[1]).toArray())
                     .collect(Collectors.toList());

@@ -13,6 +13,7 @@ import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverterContext;
 import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
 import com.cybernostics.jsp2thymeleaf.api.expressions.ActiveExpressionConverters;
 import com.cybernostics.jsp2thymeleaf.api.expressions.FunctionConverterSource;
+import com.cybernostics.jsp2thymeleaf.api.util.JspNodeException;
 import static com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils.getAttribute;
 import static java.util.Collections.EMPTY_LIST;
 import java.util.List;
@@ -32,10 +33,10 @@ public class TaglibDirectiveConverter implements JspTreeConverter
     {
         String prefix = getAttribute(jspTree, "prefix")
                 .map(JspTree::value)
-                .orElseThrow(rex("missing taglib prefix attribute"));
+                .orElseThrow(rex("missing taglib prefix attribute", jspTree));
         String uri = getAttribute(jspTree, "uri")
                 .map(JspTree::value)
-                .orElseThrow(rex("Missing taglib uri attribute"));
+                .orElseThrow(rex("Missing taglib uri attribute", jspTree));
 
         final Optional<TagConverterSource> taglibConverter = AvailableConverters.elementConverterforUri(uri);
         if (taglibConverter.isPresent())
@@ -46,9 +47,9 @@ public class TaglibDirectiveConverter implements JspTreeConverter
             final Optional<FunctionConverterSource> functionConverter = AvailableConverters.functionConverterforUri(uri);
             ActiveExpressionConverters.addTaglibConverter(prefix,
                     functionConverter
-                            .orElseThrow(rex("No converters for uri:"
+                            .orElseThrow(rex("No converters for uri:\""
                                     + uri
-                                    + ". Add converter jars or scripts to classpath ")));
+                                    + "\". Add converter jars or scripts to classpath.", jspTree)));
 
         }
 
@@ -61,8 +62,9 @@ public class TaglibDirectiveConverter implements JspTreeConverter
         return true;
     }
 
-    public static Supplier<RuntimeException> rex(String message)
+    public static Supplier<RuntimeException> rex(String message, JspTree jspTree)
     {
-        return () -> new RuntimeException(message);
+        return () -> new JspNodeException(message, jspTree);
     }
+
 }

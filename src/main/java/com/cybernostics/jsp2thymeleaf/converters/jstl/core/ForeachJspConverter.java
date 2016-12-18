@@ -30,12 +30,10 @@ public class ForeachJspConverter extends JspTagElementConverter
     {
         String value = map.getOrDefault(key, deflt);
         return value.length() == 0 ? "" : String.format(fmt, value);
-
     }
 
     public static String combineEachValue(Map<String, String> atts)
     {
-
         String optionalStatus = fmtIfPresent(atts, "varStatus", ", %s", "");
 
         String items = atts.getOrDefault("items",

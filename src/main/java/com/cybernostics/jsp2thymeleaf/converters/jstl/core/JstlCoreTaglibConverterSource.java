@@ -14,14 +14,18 @@ import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
  */
 public class JstlCoreTaglibConverterSource extends TagConverterSource
 {
-    private static TagConverter[] jstlConverters={
+
+    protected static TagConverter[] jstlConverters =
+    {
         new CifJspConverter(),
         new ForeachJspConverter(),
-        new CoutJspConverter()
+        new CoutJspConverter(),
+        new CSetJspConverter()
     };
-    
+
     public JstlCoreTaglibConverterSource()
     {
         super("http://java.sun.com/jstl/core", jstlConverters);
     }
+
 }

@@ -9,13 +9,10 @@ import com.cybernostics.forks.jsp2x.JspLexer;
 import com.cybernostics.forks.jsp2x.JspParser;
 import static com.cybernostics.forks.jsp2x.JspParser.*;
 import com.cybernostics.forks.jsp2x.JspTree;
+import static com.cybernostics.jsp2thymeleaf.AvailableConverters.scanForConverters;
+import com.cybernostics.jsp2thymeleaf.api.elements.*;
 import static com.cybernostics.jsp2thymeleaf.api.elements.ActiveTaglibConverters.addTaglibConverter;
 import static com.cybernostics.jsp2thymeleaf.api.elements.ActiveTaglibConverters.forPrefix;
-import static com.cybernostics.jsp2thymeleaf.AvailableConverters.scanForConverters;
-import com.cybernostics.jsp2thymeleaf.api.elements.CopyElementConverter;
-import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverter;
-import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverterContext;
-import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverterSource;
 import static com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils.doWithChildren;
 import static com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils.nameOrNone;
 import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
@@ -23,15 +20,8 @@ import static com.cybernostics.jsp2thymeleaf.api.util.PrefixedName.prefixedNameF
 import com.cybernostics.jsp2thymeleaf.converters.identity.DefaultElementConverterSource;
 import com.cybernostics.jsp2thymeleaf.converters.jsp.JSPDirectiveConverterSource;
 import static com.cybernostics.jsp2thymeleaf.converters.jsp.TaglibDirectiveConverter.rex;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.io.*;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,14 +29,8 @@ import java.util.regex.Pattern;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import org.apache.commons.compress.utils.IOUtils;
-import org.jdom2.Comment;
-import org.jdom2.Content;
-import org.jdom2.DocType;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.Namespace;
-import org.jdom2.Text;
+import org.apache.commons.io.IOUtils;
+import org.jdom2.*;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
@@ -60,9 +44,10 @@ public class JSP2Thymeleaf implements JspTreeConverterContext
     public static final Logger logger = Logger.getLogger(JSP2Thymeleaf.class.getName());
     private boolean showBanner;
     private JspTreeConverter elementConverter = new CopyElementConverter();
-    private Map<String, JspTreeConverter> tagToConverterMap = new HashMap<>();
     private final Namespace thns = Namespace.getNamespace("th", "http://www.thymeleaf.org");
     private final Namespace xmlns = Namespace.getNamespace("http://www.w3.org/1999/xhtml");
+    protected final Namespace cnns = Namespace.getNamespace("cn", "http://www.cybernostics.com");
+
     private final Pattern whitespace = Pattern.compile("^\\s+$");
     private JSPDirectiveConverterSource jspDirectives = new JSPDirectiveConverterSource();
 
@@ -154,7 +139,7 @@ public class JSP2Thymeleaf implements JspTreeConverterContext
             trimTrailingWhitespace(contents);
             htmlElement.addContent(contents);
             htmlElement.setNamespace(xmlns);
-            htmlElement.addNamespaceDeclaration(thns);
+            ActiveNamespaces.get().forEach(ns -> htmlElement.addNamespaceDeclaration(ns));
             return Arrays.asList(new DocType("html", "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd"), htmlElement);
         } else
         {
@@ -235,10 +220,10 @@ public class JSP2Thymeleaf implements JspTreeConverterContext
             case ELEMENT:
                 PrefixedName domTag = prefixedNameFor(jspTree.name());
                 JspTreeConverterSource converterSource1 = getConverterSource(domTag)
-                        .orElseThrow(missing(domTag));
+                        .orElseThrow(missing(domTag, jspTree));
 
                 return converterSource1.converterFor(jspTree)
-                        .orElseThrow(missing(domTag));
+                        .orElseThrow(missing(domTag, jspTree));
 
             case JSP_DIRECTIVE:
                 return jspDirectives.converterFor(jspTree)
@@ -248,15 +233,16 @@ public class JSP2Thymeleaf implements JspTreeConverterContext
         return elementConverter;
     }
 
-    private static Supplier<RuntimeException> missing(PrefixedName domTag)
+    private static Supplier<RuntimeException> missing(PrefixedName domTag, JspTree jspTree)
     {
-        return rex("No converter source found for tag " + domTag);
+        return rex("No converter source found for tag " + domTag, jspTree);
     }
 
     private Element createFragmentDef(List<Content> contents)
     {
         Element html = new Element("html", xmlns);
-        html.addNamespaceDeclaration(thns);
+
+        ActiveNamespaces.get().forEach(ns -> html.addNamespaceDeclaration(ns));
         html.addContent(NEWLINE);
         Element head = new Element("head", xmlns);
         html.addContent(head);
