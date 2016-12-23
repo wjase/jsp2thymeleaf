@@ -1,0 +1,22 @@
+<!DOCTYPE html SYSTEM "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:cn="http://www.cybernostics.com" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Thymeleaf Fragment Definition</title>
+    </head>
+    <body>
+        Form1:<br/>
+        <c:url value="/file1.jsp" var="url"/>
+
+        Form2:<br/>
+        <c:url value="/file1.jsp"/>
+
+        Form3:<br/>
+        <c:url value="/file1.jsp" var="url" context="barry"/>
+
+        Form4:<br/>
+        <c:url value="/file1.jsp" var="url" scope="session"/>
+
+        Form5:<br/>
+        <a href="<c:url value="/file1.jsp"/>">TEST</a>
+    </body>
+</html>

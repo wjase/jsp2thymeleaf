@@ -44,7 +44,6 @@ public class JSP2Thymeleaf implements JspTreeConverterContext
     public static final Logger logger = Logger.getLogger(JSP2Thymeleaf.class.getName());
     private boolean showBanner;
     private JspTreeConverter elementConverter = new CopyElementConverter();
-    private final Namespace thns = Namespace.getNamespace("th", "http://www.thymeleaf.org");
     private final Namespace xmlns = Namespace.getNamespace("http://www.w3.org/1999/xhtml");
     protected final Namespace cnns = Namespace.getNamespace("cn", "http://www.cybernostics.com");
 
@@ -140,14 +139,15 @@ public class JSP2Thymeleaf implements JspTreeConverterContext
             htmlElement.addContent(contents);
             htmlElement.setNamespace(xmlns);
             ActiveNamespaces.get().forEach(ns -> htmlElement.addNamespaceDeclaration(ns));
-            return Arrays.asList(new DocType("html", "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd"), htmlElement);
+            return Arrays.asList(new DocType("html", THYMELEAF_DTD), htmlElement);
         } else
         {
             Element thFragment = createFragmentDef(contents);
-            return Arrays.asList(new DocType("html", "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd"), thFragment);
+            return Arrays.asList(new DocType("html", THYMELEAF_DTD), thFragment);
         }
 
     }
+    private static final String THYMELEAF_DTD = "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd";
 
     private void trimTrailingWhitespace(List<Content> contents)
     {

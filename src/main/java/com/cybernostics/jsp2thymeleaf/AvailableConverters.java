@@ -5,9 +5,11 @@
  */
 package com.cybernostics.jsp2thymeleaf;
 
+import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeAttributeConverter;
 import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
 import com.cybernostics.jsp2thymeleaf.api.expressions.FunctionConverterSource;
 import com.cybernostics.jsp2thymeleaf.converters.AllJstlConverters;
+import com.cybernostics.jsp2thymeleaf.converters.jstl.core.ConverterRegistration;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 import java.lang.reflect.Modifier;
@@ -31,6 +33,7 @@ public class AvailableConverters
 
     private static Map<String, TagConverterSource> availableTagConverters = new HashMap<>();
     private static Map<String, FunctionConverterSource> availableExpressionConverters = new HashMap<>();
+    private static Map<String, JspTreeAttributeConverter> availableAttributeConverters = new HashMap<>();
 
     public static void scanForConverters()
     {
@@ -53,14 +56,14 @@ public class AvailableConverters
         }
     }
 
-    public static void addConverter(TagConverterSource converterSource)
+    public static void addConverter(String forURI, TagConverterSource converterSource)
     {
-        availableTagConverters.put(converterSource.getTaglibURI(), converterSource);
+        availableTagConverters.put(forURI, converterSource);
     }
 
-    private static void addConverter(FunctionConverterSource converterSource)
+    public static void addConverter(String forURI, FunctionConverterSource converterSource)
     {
-        availableExpressionConverters.put(converterSource.getTaglibURI(), converterSource);
+        availableExpressionConverters.put(forURI, converterSource);
     }
 
     public static Optional<TagConverterSource> elementConverterforUri(String uri)
@@ -95,20 +98,16 @@ public class AvailableConverters
         try
         {
             final Class<?> clazz = Class.forName(className);
-            if (TagConverterSource.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers()))
+            if (ConverterRegistration.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers()))
             {
-                TagConverterSource converter = (TagConverterSource) clazz.newInstance();
-                addConverter(converter);
-            }
-            if (FunctionConverterSource.class.isAssignableFrom(clazz))
-            {
-                FunctionConverterSource converterSource = (FunctionConverterSource) clazz.newInstance();
-                addConverter(converterSource);
-
+                ConverterRegistration converterRegistration = (ConverterRegistration) clazz.newInstance();
+                converterRegistration.run();
             }
         } catch (Throwable ex)
         {
-            Logger.getLogger(JSP2Thymeleaf.class.getName()).log(Level.INFO, null, ex.getMessage());
+            Logger.getLogger(JSP2Thymeleaf.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            throw new RuntimeException(ex);
+
         }
 
     }

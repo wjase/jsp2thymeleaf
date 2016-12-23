@@ -5,20 +5,11 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.core;
 
-import com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter;
-
 /**
  *
  * @author jason
  */
-public class CifJspConverter extends JspTagElementConverter
+public interface ConverterRegistration extends Runnable
 {
-
-    public CifJspConverter()
-    {
-        super("if", "block");
-        renamesAttribute("test", "if", thymeleafNS);
-
-    }
 
 }
