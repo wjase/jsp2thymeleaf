@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf;
+package com.cybernostics.jsp2thymeleaf.converters;
 
-import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeAttributeConverter;
+import com.cybernostics.jsp2thymeleaf.JSP2Thymeleaf;
 import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
 import com.cybernostics.jsp2thymeleaf.api.expressions.FunctionConverterSource;
 import com.cybernostics.jsp2thymeleaf.converters.AllJstlConverters;
@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeAttributeConverter;
 
 /**
  * Maintains a pool of available converters for taglibs based on the URI. In

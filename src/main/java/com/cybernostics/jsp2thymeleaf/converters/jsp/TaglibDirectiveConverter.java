@@ -6,7 +6,6 @@
 package com.cybernostics.jsp2thymeleaf.converters.jsp;
 
 import com.cybernostics.forks.jsp2x.JspTree;
-import com.cybernostics.jsp2thymeleaf.AvailableConverters;
 import com.cybernostics.jsp2thymeleaf.api.elements.ActiveTaglibConverters;
 import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverter;
 import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverterContext;
@@ -15,6 +14,7 @@ import com.cybernostics.jsp2thymeleaf.api.expressions.ActiveExpressionConverters
 import com.cybernostics.jsp2thymeleaf.api.expressions.FunctionConverterSource;
 import com.cybernostics.jsp2thymeleaf.api.util.JspNodeException;
 import static com.cybernostics.jsp2thymeleaf.api.util.JspTreeUtils.getAttribute;
+import com.cybernostics.jsp2thymeleaf.converters.AvailableConverters;
 import static java.util.Collections.EMPTY_LIST;
 import java.util.List;
 import java.util.Optional;

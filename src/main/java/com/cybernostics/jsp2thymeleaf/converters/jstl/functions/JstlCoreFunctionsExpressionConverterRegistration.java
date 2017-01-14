@@ -5,7 +5,7 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.functions;
 
-import com.cybernostics.jsp2thymeleaf.AvailableConverters;
+import com.cybernostics.jsp2thymeleaf.converters.AvailableConverters;
 import com.cybernostics.jsp2thymeleaf.converters.jstl.core.ConverterRegistration;
 
 /**

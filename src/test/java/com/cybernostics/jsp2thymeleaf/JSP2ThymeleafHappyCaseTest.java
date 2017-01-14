@@ -40,7 +40,7 @@ public class JSP2ThymeleafHappyCaseTest
     public void JSPToThymeleafShouldConvert()
     {
 
-        JSP2Thymeleaf jSP2Thymeleaf = new JSP2Thymeleaf();
+        JSP2ThymeleafStreamConverter jSP2Thymeleaf = new JSP2ThymeleafStreamConverter();
         jSP2Thymeleaf.setShowBanner(false);
         try
         {
@@ -67,7 +67,7 @@ public class JSP2ThymeleafHappyCaseTest
         return Arrays.asList(file.listFiles())
                 .stream()
                 .filter(it -> it.getName().contains("jsp"))
-                //                .filter(it -> it.getName().contains("each"))
+                .filter(it -> it.getName().contains("clean"))
                 .sorted()
                 .map(eachFile -> Arrays.asList((Object) eachFile.getName(), (Object) eachFile).toArray())
                 .collect(Collectors.toList());

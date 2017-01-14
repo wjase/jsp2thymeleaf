@@ -41,7 +41,7 @@ public class JSP2ThymeleafErrorCaseTest
     public void JSPToThymeleafShouldRaiseErrorFor()
     {
 
-        JSP2Thymeleaf jSP2Thymeleaf = new JSP2Thymeleaf();
+        JSP2ThymeleafStreamConverter jSP2Thymeleaf = new JSP2ThymeleafStreamConverter();
         jSP2Thymeleaf.setShowBanner(false);
         try
         {

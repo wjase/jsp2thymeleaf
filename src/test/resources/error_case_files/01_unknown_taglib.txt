@@ -1,1 +1,1 @@
-No converters for uri:"just doesn't exist". Add converter jars or scripts to classpath.( Line: 1, Column:4 )
+No converters for uri:"just doesn't exist". Add converter jars or scripts to classpath.

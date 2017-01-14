@@ -5,7 +5,7 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.core;
 
-import com.cybernostics.jsp2thymeleaf.AvailableConverters;
+import com.cybernostics.jsp2thymeleaf.converters.AvailableConverters;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.CN;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.TH;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.XMLNS;
@@ -49,7 +49,13 @@ public class JstlCoreConverterRegistration implements ConverterRegistration
                                                 .withValue(
                                                         fromFormats("${#CNPageParams.put%{scope|page!ucFirst}(%{var},%{value!stripEL})}"))
                                 ),
-                        new CurlJspConverter());
+                        converterFor("url")
+                                .withNewName("span", XMLNS)
+                                .removesAtributes("value", "var", "scope", "context")
+                                .addsAttributes(
+                                        attributeNamed("text", TH)
+                                                .withValue(fromFormats("@{${value}}"))
+                                ));
 
         AvailableConverters.addConverter("http://java.sun.com/jstl/core", jstlCoreTaglibConverterSource);
         AvailableConverters.addConverter("http://java.sun.com/jsp/jstl/core", jstlCoreTaglibConverterSource);
