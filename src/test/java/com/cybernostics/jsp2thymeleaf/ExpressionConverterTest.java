@@ -6,7 +6,7 @@
 package com.cybernostics.jsp2thymeleaf;
 
 import com.cybernostics.jsp2thymeleaf.api.elements.ELExpressionConverter;
-import com.cybernostics.jsp2thymeleaf.api.expressions.ActiveExpressionConverters;
+import com.cybernostics.jsp2thymeleaf.api.elements.ScopedJSPConverters;
 import com.cybernostics.jsp2thymeleaf.converters.jstl.functions.JstlCoreFunctionsExpressionConverterSource;
 import java.net.URL;
 import java.nio.file.Files;
@@ -41,14 +41,17 @@ public class ExpressionConverterTest
     @Before
     public void setupConverters()
     {
-        ActiveExpressionConverters.addTaglibConverter("fn", new JstlCoreFunctionsExpressionConverterSource());
+        converters = new ScopedJSPConverters();
+        converters.addTaglibFunctionConverter("fn", new JstlCoreFunctionsExpressionConverterSource());
     }
+    private ScopedJSPConverters converters;
 
     @Test
     public void expressionConverterShouldConvert()
     {
         ELExpressionConverter eLExpressionConverter = new ELExpressionConverter();
-        assertThat(eLExpressionConverter.convert(fromName), is(toName));
+
+        assertThat(eLExpressionConverter.convert(fromName, converters), is(toName));
     }
 
     @Parameters(name = "{0} -> {1}")
@@ -60,7 +63,7 @@ public class ExpressionConverterTest
             return Files
                     .lines(Paths.get(resource.toURI()))
                     .filter(line -> line.contains("==>"))
-                    .filter(line -> line.startsWith("$"))
+                    .filter(line -> !line.startsWith("#"))
                     .map(line -> line.split(" ==> "))
                     .map(eachList -> Arrays.asList((Object) eachList[0], (Object) eachList[1]).toArray())
                     .collect(Collectors.toList());

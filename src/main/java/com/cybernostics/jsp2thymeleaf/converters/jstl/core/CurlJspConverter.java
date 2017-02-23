@@ -5,7 +5,7 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.core;
 
-import com.cybernostics.forks.jsp2x.JspTree;
+import com.cybernostics.jsp.parser.JSPParser;
 import com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter;
 import static com.cybernostics.jsp2thymeleaf.api.elements.NewAttributeBuilder.attributeNamed;
 import static com.cybernostics.jsp2thymeleaf.api.util.AlternateFormatStrings.fromFormats;
@@ -29,14 +29,14 @@ public class CurlJspConverter extends JspTagElementConverter
     }
 
     @Override
-    protected Namespace newNamespaceForElement(JspTree jspTree)
+    protected Namespace newNamespaceForElement(JSPParser.JspElementContext node)
     {
         return XMLNS;
     }
 
     @Override
-    protected String newNameForElement(JspTree jspTree)
+    protected String newNameForElement(JSPParser.JspElementContext node)
     {
-        return super.newNameForElement(jspTree);
+        return super.newNameForElement(node);
     }
 }

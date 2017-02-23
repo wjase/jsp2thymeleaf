@@ -5,29 +5,26 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jsp;
 
-import com.cybernostics.forks.jsp2x.JspTree;
-import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverter;
+import com.cybernostics.jsp.parser.JSPParser;
+import com.cybernostics.jsp2thymeleaf.api.elements.JSPDirectiveConverter;
 import java.util.Optional;
-import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeConverterSource;
 
 /**
  *
  * @author jason
  */
-public class JSPDirectiveConverterSource implements JspTreeConverterSource
+public class JSPDirectiveConverterSource
 {
 
     private final TaglibDirectiveConverter taglibDirectiveConverter = new TaglibDirectiveConverter();
+
     public JSPDirectiveConverterSource()
     {
     }
 
-    @Override
-    public Optional<JspTreeConverter> converterFor(JspTree jspTree)
+    public Optional<JSPDirectiveConverter> converterFor(JSPParser.JspDirectiveContext node)
     {
         return Optional.of(taglibDirectiveConverter);
     }
-    
-    
-    
+
 }

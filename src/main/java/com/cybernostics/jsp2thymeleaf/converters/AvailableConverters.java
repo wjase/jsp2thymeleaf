@@ -7,8 +7,7 @@ package com.cybernostics.jsp2thymeleaf.converters;
 
 import com.cybernostics.jsp2thymeleaf.JSP2Thymeleaf;
 import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
-import com.cybernostics.jsp2thymeleaf.api.expressions.FunctionConverterSource;
-import com.cybernostics.jsp2thymeleaf.converters.AllJstlConverters;
+import com.cybernostics.jsp2thymeleaf.api.expressions.function.FunctionConverterSource;
 import com.cybernostics.jsp2thymeleaf.converters.jstl.core.ConverterRegistration;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
@@ -21,7 +20,6 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeAttributeConverter;
 
 /**
  * Maintains a pool of available converters for taglibs based on the URI. In
@@ -32,9 +30,8 @@ import com.cybernostics.jsp2thymeleaf.api.elements.JspTreeAttributeConverter;
 public class AvailableConverters
 {
 
-    private static Map<String, TagConverterSource> availableTagConverters = new HashMap<>();
-    private static Map<String, FunctionConverterSource> availableExpressionConverters = new HashMap<>();
-    private static Map<String, JspTreeAttributeConverter> availableAttributeConverters = new HashMap<>();
+    private static final Map<String, TagConverterSource> availableTagConverters = new HashMap<>();
+    private static final Map<String, FunctionConverterSource> availableExpressionConverters = new HashMap<>();
 
     public static void scanForConverters()
     {

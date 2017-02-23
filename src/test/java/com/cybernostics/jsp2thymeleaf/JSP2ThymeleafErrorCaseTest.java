@@ -1,12 +1,12 @@
 package com.cybernostics.jsp2thymeleaf;
 
-import com.cybernostics.jsp2thymeleaf.api.util.JspNodeException;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,30 +30,36 @@ public class JSP2ThymeleafErrorCaseTest
     private static Logger LOG = Logger.getLogger(JSP2ThymeleafErrorCaseTest.class.getName());
 
     private final File jspFile;
+    final URL rootResource;
+    final Path rootPath;
 
-    public JSP2ThymeleafErrorCaseTest(String name, File JSPFile)
+    public JSP2ThymeleafErrorCaseTest(String name, File JSPFile) throws URISyntaxException
     {
         this.jspFile = JSPFile;
-
+        rootResource = JSP2ThymeleafHappyCaseTest.class.getClassLoader().getResource("error_case_files/");
+        rootPath = Paths.get(rootResource.toURI());
     }
 
     @Test
-    public void JSPToThymeleafShouldRaiseErrorFor()
+    public void JSPToThymeleafShouldRaiseErrorFor() throws IOException
     {
 
-        JSP2ThymeleafStreamConverter jSP2Thymeleaf = new JSP2ThymeleafStreamConverter();
+        JSP2ThymeleafFileConverter jSP2Thymeleaf = new JSP2ThymeleafFileConverter();
         jSP2Thymeleaf.setShowBanner(false);
+        File randomOutFile = File.createTempFile("errorCaseTest", ".jsp");
         try
         {
-            ByteArrayOutputStream convertedFile = new ByteArrayOutputStream();
-            jSP2Thymeleaf.convert(new FileInputStream(jspFile), convertedFile);
-            fail("Should have caused an Error");
-        } catch (IOException ex)
+            TokenisedFile jspFileTok = new TokenisedFile(jspFile.toPath(), rootPath);
+
+            jSP2Thymeleaf.convert(jspFileTok, randomOutFile);
+
+            fail("Should have caused an Error:" + getExpectedErrorText());
+        } catch (Exception ex)
         {
             assertThat(ex.getMessage(), is(getExpectedErrorText()));
-        } catch (JspNodeException ex)
+        } finally
         {
-            assertThat(ex.getMessage(), is(getExpectedErrorText()));
+            randomOutFile.delete();
         }
     }
 

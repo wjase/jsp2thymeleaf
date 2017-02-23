@@ -5,9 +5,9 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.format;
 
-import static com.cybernostics.jsp2thymeleaf.api.expressions.DefaultFunctionExpressionConverter.convertsMethodCall;
-import com.cybernostics.jsp2thymeleaf.api.expressions.ExpressionFunctionConverter;
-import com.cybernostics.jsp2thymeleaf.api.expressions.FunctionConverterSource;
+import static com.cybernostics.jsp2thymeleaf.api.expressions.function.DefaultFunctionExpressionConverter.convertsMethodCall;
+import com.cybernostics.jsp2thymeleaf.api.expressions.function.FunctionConverterSource;
+import com.cybernostics.jsp2thymeleaf.api.expressions.ExpressionVisitor;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +24,7 @@ public class JstlFormatTaglibConverterSource extends FunctionConverterSource
         "contains",
         "containsIgnoreCase"
     };
-    private static List<ExpressionFunctionConverter> jstlConverters
+    private static List<ExpressionVisitor> jstlConverters
             = Arrays.stream(simpleConversions)
                     .map(method -> convertsMethodCall(method).toMethodCall(method))
                     .collect(Collectors.toList());

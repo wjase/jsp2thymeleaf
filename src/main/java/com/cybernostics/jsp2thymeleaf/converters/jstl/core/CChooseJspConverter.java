@@ -5,7 +5,7 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.core;
 
-import com.cybernostics.forks.jsp2x.JspTree;
+import com.cybernostics.jsp.parser.JSPParser;
 import com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter;
 import java.util.Arrays;
 import org.jdom2.Attribute;
@@ -30,7 +30,7 @@ public class CChooseJspConverter extends JspTagElementConverter
     protected final Namespace thymeleafCN = Namespace.getNamespace("cn", "http://www.cybernostics.com");
 
     @Override
-    protected Namespace newNamespaceForElement(JspTree jspTree)
+    protected Namespace newNamespaceForElement(JSPParser.JspElementContext node)
     {
         return thymeleafCN;
     }

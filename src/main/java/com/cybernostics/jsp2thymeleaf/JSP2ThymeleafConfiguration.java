@@ -38,6 +38,7 @@ public class JSP2ThymeleafConfiguration
 
     private Path srcFolder;
     private Path destFolder;
+    private Path rootFolder;
 
     private static final String[] EMPTY = new String[0];
     private String[] includes = EMPTY;
@@ -209,6 +210,11 @@ public class JSP2ThymeleafConfiguration
         {
             throw new RuntimeException("Unable to create path:" + destFolder.toString() + ".\n Check permissions and storage space.");
         }
+    }
+
+    public Path getRootFolder()
+    {
+        return rootFolder != null ? rootFolder : srcFolder;
     }
 
     public static class JSP2ThymeleafConfigurationBuilder

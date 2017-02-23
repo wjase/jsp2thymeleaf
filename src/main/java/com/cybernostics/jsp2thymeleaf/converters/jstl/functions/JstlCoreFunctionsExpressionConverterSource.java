@@ -5,9 +5,9 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.functions;
 
-import static com.cybernostics.jsp2thymeleaf.api.expressions.DefaultFunctionExpressionConverter.convertsMethodCall;
-import com.cybernostics.jsp2thymeleaf.api.expressions.ExpressionFunctionConverter;
-import com.cybernostics.jsp2thymeleaf.api.expressions.FunctionConverterSource;
+import static com.cybernostics.jsp2thymeleaf.api.expressions.function.DefaultFunctionExpressionConverter.convertsMethodCall;
+import com.cybernostics.jsp2thymeleaf.api.expressions.function.FunctionConverterSource;
+import com.cybernostics.jsp2thymeleaf.api.expressions.ExpressionVisitor;
 import com.cybernostics.jsp2thymeleaf.api.util.SimpleStringTemplateProcessor;
 import java.util.Arrays;
 import java.util.List;
@@ -42,7 +42,7 @@ public class JstlCoreFunctionsExpressionConverterSource extends FunctionConverte
         "replace",
         "split"
     };
-    private static List<ExpressionFunctionConverter> jstlConverters
+    private static List< ExpressionVisitor> jstlConverters
             = Arrays.stream(simpleConversions)
                     .map(method -> convertsMethodCall(method).toMethodCall(String.format("#strings.%s", method)))
                     .collect(Collectors.toList());

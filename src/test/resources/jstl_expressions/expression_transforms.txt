@@ -1,5 +1,6 @@
 ${aValue} ==> ${aValue}
 Some Text ==> Some Text
+${2000*2} ==> ${2000*2}
 ${fn:contains(param,"barry")} ==> ${#strings.contains(param,"barry")}
 ${fn:containsIgnoreCase(param,"barry")} ==> ${#strings.containsIgnoreCase(param,"barry")}
 ${fn:endsWith(param,"barry")} ==> ${#strings.endsWith(param,"barry")}
