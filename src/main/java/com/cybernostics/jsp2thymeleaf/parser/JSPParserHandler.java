@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf;
+package com.cybernostics.jsp2thymeleaf.parser;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;

@@ -1,5 +1,7 @@
 package com.cybernostics.jsp2thymeleaf;
 
+import com.cybernostics.jsp2thymeleaf.converters.JSP2ThymeleafFileConverter;
+import com.cybernostics.jsp2thymeleaf.parser.TokenisedFile;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -45,8 +47,8 @@ public class JSP2ThymeleafHappyCaseTest
     @Test
     public void JSPToThymeleafShouldConvert()
     {
-
-        JSP2ThymeleafFileConverter jSP2Thymeleaf = new JSP2ThymeleafFileConverter();
+        JSP2ThymeleafConfiguration configuration = JSP2ThymeleafConfiguration.getBuilder().build();
+        JSP2ThymeleafFileConverter jSP2Thymeleaf = new JSP2ThymeleafFileConverter(configuration);
         jSP2Thymeleaf.setShowBanner(false);
         try
         {

@@ -3,11 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf;
+package com.cybernostics.jsp2thymeleaf.converters;
 
 import com.cybernostics.jsp.parser.JSPParser;
+import com.cybernostics.jsp2thymeleaf.JSP2ThymeleafConfiguration;
 import com.cybernostics.jsp2thymeleaf.api.elements.*;
 import static com.cybernostics.jsp2thymeleaf.converters.AvailableConverters.scanForConverters;
+import com.cybernostics.jsp2thymeleaf.parser.JSP2ThymeleafTransformerListener;
+import com.cybernostics.jsp2thymeleaf.parser.TokenisedFile;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,9 +28,9 @@ public class JSP2ThymeleafFileConverter
     private boolean showBanner = true;
     private JSPElementNodeConverter elementConverter = new CopyElementConverter();
 
-    public JSP2ThymeleafFileConverter()
+    public JSP2ThymeleafFileConverter(JSP2ThymeleafConfiguration configuration)
     {
-        scanForConverters();
+        scanForConverters(configuration);
 
     }
 

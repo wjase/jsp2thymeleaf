@@ -7,6 +7,8 @@ package com.cybernostics.jsp2thymeleaf;
 
 import static com.cybernostics.jsp2thymeleaf.converters.AvailableConverters.scanForConverters;
 import com.cybernostics.jsp2thymeleaf.converters.JSP2ThymeLeafConverterException;
+import com.cybernostics.jsp2thymeleaf.converters.JSP2ThymeleafFileConverter;
+import com.cybernostics.jsp2thymeleaf.parser.TokenisedFile;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -31,9 +33,9 @@ public class JSP2Thymeleaf
 
     public JSP2Thymeleaf(JSP2ThymeleafConfiguration configuration)
     {
-        scanForConverters();
         this.configuration = configuration;
-        converter = new JSP2ThymeleafFileConverter();
+        scanForConverters(configuration);
+        converter = new JSP2ThymeleafFileConverter(configuration);
         converter.setShowBanner(configuration.isShowBanner());
         exceptions = new ArrayList<>();
 

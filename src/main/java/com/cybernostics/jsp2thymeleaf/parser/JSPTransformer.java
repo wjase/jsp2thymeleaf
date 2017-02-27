@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf;
+package com.cybernostics.jsp2thymeleaf.parser;
 
 import com.cybernostics.jsp.parser.JSPParser;
 import com.cybernostics.jsp.parser.JSPParserBaseListener;

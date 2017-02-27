@@ -3,11 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf;
+package com.cybernostics.jsp2thymeleaf.parser;
 
 import com.cybernostics.jsp.parser.JSPLexer;
 import com.cybernostics.jsp.parser.JSPParser;
 import com.cybernostics.jsp.parser.JSPParserBaseListener;
+import com.cybernostics.jsp2thymeleaf.JSP2Thymeleaf;
 import static com.cybernostics.jsp2thymeleaf.api.util.StringFunctions.trimQuotes;
 import java.io.FileInputStream;
 import java.io.IOException;

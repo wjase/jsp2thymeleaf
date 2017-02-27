@@ -6,12 +6,17 @@
 package com.cybernostics.jsp2thymeleaf.converters;
 
 import com.cybernostics.jsp2thymeleaf.JSP2Thymeleaf;
+import com.cybernostics.jsp2thymeleaf.JSP2ThymeleafConfiguration;
 import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
 import com.cybernostics.jsp2thymeleaf.api.expressions.function.FunctionConverterSource;
 import com.cybernostics.jsp2thymeleaf.converters.jstl.core.ConverterRegistration;
+import groovy.lang.GroovyShell;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
+import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +25,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.joining;
 
 /**
  * Maintains a pool of available converters for taglibs based on the URI. In
@@ -33,19 +39,25 @@ public class AvailableConverters
     private static final Map<String, TagConverterSource> availableTagConverters = new HashMap<>();
     private static final Map<String, FunctionConverterSource> availableExpressionConverters = new HashMap<>();
 
-    public static void scanForConverters()
+    public static void scanForConverters(JSP2ThymeleafConfiguration configuration)
     {
-        String taglibPaths = System.getProperty("taglibs", "");
-        taglibPaths = taglibPaths + ":" + AllJstlConverters.class.getPackage().getName();
 
-        List<String> paths = Arrays.stream(taglibPaths.split(":")).filter(it -> !it.isEmpty()).collect(Collectors.toList());
+        registerConvertersFromClasspath(configuration);
+        registerConvertersFromScripts(configuration);
+
+    }
+
+    private static void registerConvertersFromClasspath(JSP2ThymeleafConfiguration configuration)
+    {
+        String converterPackages = configuration.getConverterPackages().stream().collect(joining(":"));
+
+        List<String> paths = Arrays.stream(converterPackages.split(":")).filter(it -> !it.isEmpty()).collect(Collectors.toList());
         for (String path : paths)
         {
 
             ScanResult scanResult = new FastClasspathScanner(path).scan();
-
             List<String> tagConverterNames
-                    = scanResult.getNamesOfAllClasses();
+                    = scanResult.getNamesOfClassesImplementing(ConverterRegistration.class);
 
             tagConverterNames
                     .stream()
@@ -96,7 +108,7 @@ public class AvailableConverters
         try
         {
             final Class<?> clazz = Class.forName(className);
-            if (ConverterRegistration.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers()))
+            if (!Modifier.isAbstract(clazz.getModifiers()))
             {
                 ConverterRegistration converterRegistration = (ConverterRegistration) clazz.newInstance();
                 converterRegistration.run();
@@ -108,6 +120,25 @@ public class AvailableConverters
 
         }
 
+    }
+
+    private static void registerConvertersFromScripts(JSP2ThymeleafConfiguration configuration)
+    {
+        configuration.getConverterScripts().forEach(scriptPath -> executeScript(scriptPath));
+    }
+
+    private static void executeScript(Path scriptPath)
+    {
+        try
+        {
+            String groovyScript = new String(Files.readAllBytes(scriptPath));
+            // call groovy expressions from Java code
+            GroovyShell shell = new GroovyShell();
+            shell.evaluate(groovyScript);
+        } catch (IOException ex)
+        {
+            Logger.getLogger(AvailableConverters.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
 }

@@ -6,6 +6,7 @@
 package com.cybernostics.jsp2thymeleaf;
 
 import com.cybernostics.jsp2thymeleaf.api.util.SetUtils;
+import com.cybernostics.jsp2thymeleaf.converters.AllJstlConverters;
 import com.cybernostics.jsp2thymeleaf.util.Globber;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,6 +15,9 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.ArrayList;
+import java.util.Arrays;
+import static java.util.Collections.EMPTY_LIST;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -53,6 +57,9 @@ public class JSP2ThymeleafConfiguration
             PosixFilePermission.OWNER_READ,
             PosixFilePermission.OWNER_WRITE
     ));
+    private List<String> converterPackages = new ArrayList<>();
+
+    private List<Path> converterScripts = EMPTY_LIST;
 
     public Set<Path> getFilesToProcess()
     {
@@ -61,6 +68,7 @@ public class JSP2ThymeleafConfiguration
 
     private JSP2ThymeleafConfiguration()
     {
+        converterPackages.addAll(Arrays.asList(AllJstlConverters.class.getPackage().getName()));
     }
 
     /**
@@ -76,6 +84,8 @@ public class JSP2ThymeleafConfiguration
         try
         {
             Options options = new Options();
+            options.addOption("p", "taglib-converter-pkgs", true, "The location of classpath packages containing additional taglib converters.");
+            options.addOption("g", "taglib-converter-scripts", true, "The location of script files containing additional taglib converters.");
             options.addOption("s", "source-folder", true, "The location of the jsp files to convert.");
             options.addOption("d", "dest-folder", true, "The location of the jsp files to convert.");
             options.addOption("i", "includes", true, "Comma-separated list of ant patterns to include.\n  Default is *.jsp,*.jspx,*.jspf");
@@ -91,6 +101,11 @@ public class JSP2ThymeleafConfiguration
             config.excludes = parsedArgs.getOptionValue("e", "").split(",");
             config.showBanner = parsedArgs.hasOption("b");
             config.filenames = parsedArgs.getArgs();
+            config.converterPackages.addAll(
+                    Arrays.stream(parsedArgs.getOptionValue("p", "").split(",")).collect(toList()));
+            config.converterScripts = Arrays.stream(parsedArgs.getOptionValue("g", "").split(","))
+                    .map(filename -> Paths.get(filename))
+                    .collect(toList());
 
             config.processPathParameters();
 
@@ -156,24 +171,28 @@ public class JSP2ThymeleafConfiguration
 
     private void processPathParameters()
     {
-        filesToProcess = Globber.match(srcFolder.toString(), includes);
-        final Set<Path> exclusions = Globber.match(srcFolder.toString(), excludes);
-        filesToProcess.removeAll(exclusions);
-
-        for (String filename : filenames)
+        if (srcFolder != null)
         {
-            final Path eachPath = Paths.get(filename);
-            if (eachPath.isAbsolute())
-            {
-                filesToProcess.add(eachPath);
-            } else
-            {
-                filesToProcess.add(srcFolder.resolve(eachPath));
-            }
-        }
-        reportAnyMissingFiles();
+            filesToProcess = Globber.match(srcFolder.toString(), includes);
+            final Set<Path> exclusions = Globber.match(srcFolder.toString(), excludes);
+            filesToProcess.removeAll(exclusions);
 
-        ensureExists(destFolder);
+            for (String filename : filenames)
+            {
+                final Path eachPath = Paths.get(filename);
+                if (eachPath.isAbsolute())
+                {
+                    filesToProcess.add(eachPath);
+                } else
+                {
+                    filesToProcess.add(srcFolder.resolve(eachPath));
+                }
+            }
+            reportAnyMissingFiles();
+
+            ensureExists(destFolder);
+
+        }
     }
 
     private void reportAnyMissingFiles()
@@ -215,6 +234,16 @@ public class JSP2ThymeleafConfiguration
     public Path getRootFolder()
     {
         return rootFolder != null ? rootFolder : srcFolder;
+    }
+
+    public List<String> getConverterPackages()
+    {
+        return converterPackages;
+    }
+
+    public List<Path> getConverterScripts()
+    {
+        return converterScripts;
     }
 
     public static class JSP2ThymeleafConfigurationBuilder
