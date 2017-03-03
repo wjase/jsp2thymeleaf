@@ -10,13 +10,15 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.collection.IsEmptyCollection.empty;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -59,7 +61,8 @@ public class JSP2ThymeleafHappyCaseTest
 
             File randomOutFile = File.createTempFile("happyCaseTest", ".jsp");
 
-            jSP2Thymeleaf.convert(jspFileTok, randomOutFile);
+            final List<Exception> errors = jSP2Thymeleaf.convert(jspFileTok, randomOutFile);
+            assertThat(errors, is(empty()));
             final String convertedContent = FileUtils.readFileToString(randomOutFile, Charset.defaultCharset());
             LOG.info("\n" + convertedContent);
             assertThat(convertedContent.replaceAll("\\s+", " "), is(expectedContent.replaceAll("\\s+", " ")));

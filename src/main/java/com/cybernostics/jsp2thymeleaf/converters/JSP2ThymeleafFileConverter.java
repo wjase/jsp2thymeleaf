@@ -12,6 +12,7 @@ import static com.cybernostics.jsp2thymeleaf.converters.AvailableConverters.scan
 import com.cybernostics.jsp2thymeleaf.parser.JSP2ThymeleafTransformerListener;
 import com.cybernostics.jsp2thymeleaf.parser.TokenisedFile;
 import java.io.*;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -39,14 +40,16 @@ public class JSP2ThymeleafFileConverter
         this.showBanner = showBanner;
     }
 
-    public void convert(TokenisedFile file, File toWrite)
+    public List<Exception> convert(TokenisedFile file, File toWrite)
     {
 
+        final JSP2ThymeleafErrorCollector jsP2ThymeleafErrorCollector = new JSP2ThymeleafErrorCollector(file);
         try
         {
             CommonTokenStream tokens = new CommonTokenStream(file.getLexer());
             // Pass the tokens to the parser
             JSPParser parser = new JSPParser(tokens);
+            parser.addErrorListener(jsP2ThymeleafErrorCollector);
             // Specify our entry point
             JSPParser.JspDocumentContext documentContext = parser.jspDocument();
             // Walk it and attach our listener
@@ -60,28 +63,7 @@ public class JSP2ThymeleafFileConverter
         {
             Logger.getLogger(JSP2ThymeleafFileConverter.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return jsP2ThymeleafErrorCollector.getExceptions();
     }
 
-//    public void convert(InputStream inputStream, OutputStream outputStream)
-//    {
-//        try
-//        {
-//
-//            JSPLexer lexer = new JSPLexer(new ANTLRInputStream(inputStream));
-//            // Get a list of matched tokens
-//            CommonTokenStream tokens = new CommonTokenStream(lexer);
-//            // Pass the tokens to the parser
-//            JSPParser parser = new JSPParser(tokens);
-//            // Specify our entry point
-//            JSPParser.JspDocumentContext documentContext = parser.jspDocument();
-//            // Walk it and attach our listener
-//            ParseTreeWalker walker = new ParseTreeWalker();
-//            JSP2ThymeleafTransformerListener listener = new JSP2ThymeleafTransformerListener();
-//            walker.walk(listener, documentContext);
-//            listener.write(outputStream);
-//        } catch (IOException ex)
-//        {
-//            Logger.getLogger(JSP2ThymeleafFileConverter.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
 }

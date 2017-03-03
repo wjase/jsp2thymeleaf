@@ -5,6 +5,7 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.core;
 
+import com.cybernostics.jsp2thymeleaf.api.common.taglib.ConverterRegistration;
 import com.cybernostics.jsp2thymeleaf.converters.AvailableConverters;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.CN;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.TH;

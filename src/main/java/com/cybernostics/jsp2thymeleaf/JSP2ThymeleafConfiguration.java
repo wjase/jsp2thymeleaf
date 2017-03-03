@@ -17,6 +17,8 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Collections.EMPTY_LIST;
 import java.util.List;
 import java.util.Set;
@@ -84,7 +86,7 @@ public class JSP2ThymeleafConfiguration
         try
         {
             Options options = new Options();
-            options.addOption("p", "taglib-converter-pkgs", true, "The location of classpath packages containing additional taglib converters.");
+            options.addOption("p", "taglib-converter-pkgs", true, "List of classpath packages containing additional taglib converters.");
             options.addOption("g", "taglib-converter-scripts", true, "The location of script files containing additional taglib converters.");
             options.addOption("s", "source-folder", true, "The location of the jsp files to convert.");
             options.addOption("d", "dest-folder", true, "The location of the jsp files to convert.");
@@ -102,8 +104,12 @@ public class JSP2ThymeleafConfiguration
             config.showBanner = parsedArgs.hasOption("b");
             config.filenames = parsedArgs.getArgs();
             config.converterPackages.addAll(
-                    Arrays.stream(parsedArgs.getOptionValue("p", "").split(",")).collect(toList()));
+                    Arrays.stream(parsedArgs.getOptionValue("p", "")
+                            .split(","))
+                            .filter(it -> it.length() > 0)
+                            .collect(toList()));
             config.converterScripts = Arrays.stream(parsedArgs.getOptionValue("g", "").split(","))
+                    .filter(it -> it.length() > 0)
                     .map(filename -> Paths.get(filename))
                     .collect(toList());
 
@@ -288,6 +294,21 @@ public class JSP2ThymeleafConfiguration
         public JSP2ThymeleafConfigurationBuilder withFileNames(String... filenames)
         {
             configuration.filenames = filenames;
+            return this;
+        }
+
+        public JSP2ThymeleafConfigurationBuilder withConverterPackages(String... packages)
+        {
+            configuration.converterPackages = asList(packages);
+            return this;
+        }
+
+        public JSP2ThymeleafConfigurationBuilder withConverterScripts(String... converterScripts)
+        {
+            configuration.converterScripts = stream(converterScripts)
+                    .filter(it -> it.length() > 0)
+                    .map(it -> Paths.get(it))
+                    .collect(toList());
             return this;
         }
 
