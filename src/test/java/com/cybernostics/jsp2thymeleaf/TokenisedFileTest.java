@@ -5,7 +5,7 @@
  */
 package com.cybernostics.jsp2thymeleaf;
 
-import com.cybernostics.jsp2thymeleaf.parser.TokenisedFile;
+import com.cybernostics.jsp2thymeleaf.api.common.TokenisedFile;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;

@@ -1,7 +1,9 @@
 package com.cybernostics.jsp2thymeleaf;
 
+import com.cybernostics.jsp2thymeleaf.api.common.TokenisedFile;
+import com.cybernostics.jsp2thymeleaf.api.elements.ActiveNamespaces;
+import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
 import com.cybernostics.jsp2thymeleaf.converters.JSP2ThymeleafFileConverter;
-import com.cybernostics.jsp2thymeleaf.parser.TokenisedFile;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -49,6 +51,7 @@ public class JSP2ThymeleafHappyCaseTest
     @Test
     public void JSPToThymeleafShouldConvert()
     {
+        ActiveNamespaces.reset();
         JSP2ThymeleafConfiguration configuration = JSP2ThymeleafConfiguration.getBuilder().build();
         JSP2ThymeleafFileConverter jSP2Thymeleaf = new JSP2ThymeleafFileConverter(configuration);
         jSP2Thymeleaf.setShowBanner(false);
@@ -61,7 +64,7 @@ public class JSP2ThymeleafHappyCaseTest
 
             File randomOutFile = File.createTempFile("happyCaseTest", ".jsp");
 
-            final List<Exception> errors = jSP2Thymeleaf.convert(jspFileTok, randomOutFile);
+            final List<JSP2ThymeLeafException> errors = jSP2Thymeleaf.convert(jspFileTok, randomOutFile);
             assertThat(errors, is(empty()));
             final String convertedContent = FileUtils.readFileToString(randomOutFile, Charset.defaultCharset());
             LOG.info("\n" + convertedContent);

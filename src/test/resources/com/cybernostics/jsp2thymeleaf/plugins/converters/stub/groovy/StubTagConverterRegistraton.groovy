@@ -7,7 +7,7 @@ package com.cybernostics.jsp2thymeleaf.plugins.converters.stub.groovy
 import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource
 import com.cybernostics.jsp2thymeleaf.api.expressions.function.FunctionConverterSource
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.converterFor
-import com.cybernostics.jsp2thymeleaf.converters.AvailableConverters
+import com.cybernostics.jsp2thymeleaf.api.common.AvailableConverters
 import org.jdom2.Namespace
 
 def TEST = Namespace.getNamespace("TEST","http://test.boo");

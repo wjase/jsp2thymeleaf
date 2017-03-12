@@ -5,10 +5,12 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters;
 
+import com.cybernostics.jsp2thymeleaf.api.common.TokenisedFile;
+import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
+import com.cybernostics.jsp2thymeleaf.api.exception.MutableFileLocation;
 import static com.cybernostics.jsp2thymeleaf.api.util.MapUtils.entry;
 import static com.cybernostics.jsp2thymeleaf.api.util.MapUtils.mapOf;
 import com.cybernostics.jsp2thymeleaf.api.util.SimpleStringTemplateProcessor;
-import com.cybernostics.jsp2thymeleaf.parser.TokenisedFile;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -28,9 +30,9 @@ public class JSP2ThymeleafErrorCollector implements ANTLRErrorListener
 {
 
     public static final Logger LOG = Logger.getLogger(JSP2ThymeleafErrorCollector.class.getName());
-    private final List<Exception> exceptions = new ArrayList<>();
+    private final List<JSP2ThymeLeafException> exceptions = new ArrayList<>();
 
-    public List<Exception> getExceptions()
+    public List<JSP2ThymeLeafException> getExceptions()
     {
         return exceptions;
     }
@@ -75,6 +77,18 @@ public class JSP2ThymeleafErrorCollector implements ANTLRErrorListener
     public void reportContextSensitivity(Parser parser, DFA dfa, int line, int column, ATNConfigSet atncs)
     {
         LOG.finer(getParserError("Parser ContextSensitivity:", parser, dfa, line, column));
+    }
+
+    void add(List<JSP2ThymeLeafException> problems)
+    {
+        problems.stream().forEach((nodeEx) ->
+        {
+            if (nodeEx instanceof MutableFileLocation)
+            {
+                ((MutableFileLocation) nodeEx).setFile(file);
+            }
+            exceptions.add(nodeEx);
+        });
     }
 
 }

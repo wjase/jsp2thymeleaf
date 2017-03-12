@@ -5,8 +5,11 @@
  */
 package com.cybernostics.jsp2thymeleaf.api.util;
 
+import com.cybernostics.jsp.parser.JSPParser;
+import com.cybernostics.jsp2thymeleaf.api.exception.JSPNodeException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.apache.commons.collections.keyvalue.DefaultMapEntry;
 
 /**
@@ -29,6 +32,21 @@ public class MapUtils
     public static <L, R> Map.Entry<L, R> entry(L left, R right)
     {
         return new DefaultMapEntry(left, right);
+    }
+
+    public static Supplier<JSPNodeException> rex(String message, JSPParser.JspDirectiveContext jspTree)
+    {
+        return () -> new JSPNodeException(message, jspTree);
+    }
+
+    public static Supplier<JSPNodeException> rex(String message, JSPParser.JspElementContext jspTree)
+    {
+        return () -> new JSPNodeException(message, jspTree);
+    }
+
+    public static Supplier<RuntimeException> rex(String message)
+    {
+        return () -> new RuntimeException(message);
     }
 
 }

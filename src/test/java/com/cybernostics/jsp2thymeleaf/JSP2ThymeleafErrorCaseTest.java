@@ -1,7 +1,8 @@
 package com.cybernostics.jsp2thymeleaf;
 
+import com.cybernostics.jsp2thymeleaf.api.common.TokenisedFile;
+import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
 import com.cybernostics.jsp2thymeleaf.converters.JSP2ThymeleafFileConverter;
-import com.cybernostics.jsp2thymeleaf.parser.TokenisedFile;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -10,13 +11,16 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toList;
 import org.apache.commons.io.FileUtils;
-import static org.hamcrest.CoreMatchers.is;
+import org.hamcrest.Description;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
+import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -54,24 +58,32 @@ public class JSP2ThymeleafErrorCaseTest
         {
             TokenisedFile jspFileTok = new TokenisedFile(jspFile.toPath(), rootPath);
 
-            jSP2Thymeleaf.convert(jspFileTok, randomOutFile);
+            final List<JSP2ThymeLeafException> exceptions = jSP2Thymeleaf.convert(jspFileTok, randomOutFile);
 
-            fail("Should have caused an Error:" + getExpectedErrorText());
-        } catch (Exception ex)
-        {
-            assertThat(ex.getMessage(), is(getExpectedErrorText()));
+            assertThat(exceptions, IsIterableContainingInOrder.contains(getExpectedExceptionMatchers()));
+
         } finally
         {
             randomOutFile.delete();
         }
     }
 
-    private String getExpectedErrorText()
+    private TypeSafeDiagnosingMatcher<Exception> exceptionWithMessage(final String expectedMessage)
+    {
+        return new ExceptionMessageMatcher(expectedMessage);
+    }
+
+    private ExceptionMessageMatcher[] getExpectedExceptionMatchers()
     {
         try
         {
+            ExceptionMessageMatcher[] templateArray = new ExceptionMessageMatcher[0];
             File expectedErrorTextFilename = new File(jspFile.getAbsolutePath().replaceAll(".jsp$", ".txt"));
-            return FileUtils.readFileToString(expectedErrorTextFilename, Charset.defaultCharset());
+            return FileUtils.readLines(expectedErrorTextFilename,
+                    Charset.defaultCharset())
+                    .stream()
+                    .map(text -> exceptionWithMessage(text))
+                    .collect(toList()).toArray(templateArray);
         } catch (IOException ex)
         {
             Logger.getLogger(JSP2ThymeleafErrorCaseTest.class.getName()).log(Level.SEVERE, null, ex);
@@ -90,5 +102,34 @@ public class JSP2ThymeleafErrorCaseTest
                 .sorted()
                 .map(eachFile -> Arrays.asList((Object) eachFile.getName(), (Object) eachFile).toArray())
                 .collect(Collectors.toList());
+    }
+
+    private static class ExceptionMessageMatcher extends TypeSafeDiagnosingMatcher<Exception>
+    {
+
+        private final String expectedMessage;
+
+        public ExceptionMessageMatcher(String expectedMessage)
+        {
+            this.expectedMessage = expectedMessage;
+        }
+
+        @Override
+        protected boolean matchesSafely(Exception item, Description mismatchDescription)
+        {
+            if (item.getMessage().equals(expectedMessage))
+            {
+                return true;
+            }
+            mismatchDescription.appendText(item.getMessage());
+            return false;
+        }
+
+        @Override
+        public void describeTo(Description description)
+        {
+            description.appendText("Exception with message:" + expectedMessage);
+
+        }
     }
 }

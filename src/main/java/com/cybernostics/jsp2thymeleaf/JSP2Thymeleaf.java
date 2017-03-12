@@ -5,10 +5,10 @@
  */
 package com.cybernostics.jsp2thymeleaf;
 
-import static com.cybernostics.jsp2thymeleaf.converters.AvailableConverters.scanForConverters;
-import com.cybernostics.jsp2thymeleaf.converters.JSP2ThymeLeafConverterException;
+import com.cybernostics.jsp2thymeleaf.api.common.TokenisedFile;
+import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
+import static com.cybernostics.jsp2thymeleaf.converters.ConverterScanner.scanForConverters;
 import com.cybernostics.jsp2thymeleaf.converters.JSP2ThymeleafFileConverter;
-import com.cybernostics.jsp2thymeleaf.parser.TokenisedFile;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ public class JSP2Thymeleaf
         exceptions = new ArrayList<>();
 
     }
-    private List<JSP2ThymeLeafConverterException> exceptions;
+    private List<JSP2ThymeLeafException> exceptions;
     private JSP2ThymeleafFileConverter converter;
 
     public static void main(String[] args)
@@ -50,7 +50,7 @@ public class JSP2Thymeleaf
         jsP2Thymeleaf.run();
     }
 
-    public List<JSP2ThymeLeafConverterException> run()
+    public List<JSP2ThymeLeafException> run()
     {
         tokenisedFilesMap = configuration
                 .getFilesToProcess()
@@ -59,7 +59,11 @@ public class JSP2Thymeleaf
                 .sorted()
                 .collect(toMap(TokenisedFile::getPath, it -> it));
 
-        tokenisedFilesMap.values().stream().sorted().forEachOrdered(eachInputFile -> convertFile(eachInputFile));
+        tokenisedFilesMap
+                .values()
+                .stream()
+                .sorted()
+                .forEachOrdered(eachInputFile -> convertFile(eachInputFile));
         return exceptions;
     }
     private Map<Path, TokenisedFile> tokenisedFilesMap;
@@ -72,16 +76,19 @@ public class JSP2Thymeleaf
             try
             {
                 logger.log(Level.INFO, "JSP2Thymeleaf processing:" + eachInputFile.toString());
-                converter.convert(eachInputFile, outputFilePath);
+                exceptions.addAll(converter.convert(eachInputFile, outputFilePath));
                 logger.log(Level.INFO, "JSP2Thymeleaf wrote:" + outputFilePath.toString());
                 eachInputFile.getIncludedPaths()
                         .stream()
                         .map(path -> tokenisedFilesMap.get(path))
                         .forEach(tokenisedFile -> convertFile(tokenisedFile));
 
-            } catch (Exception exception)
+            } catch (JSP2ThymeLeafException exception)
             {
-                exceptions.add(new JSP2ThymeLeafConverterException(exception, eachInputFile.getFilePath()));
+                exceptions.add(exception);
+            } catch (Throwable exception)
+            {
+                exceptions.add(JSP2ThymeLeafException.builder(exception).build());
             } finally
             {
                 alreadyProcessed.add(eachInputFile);

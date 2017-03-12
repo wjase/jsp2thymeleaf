@@ -21,12 +21,14 @@ import com.cybernostics.jsp2thymeleaf.api.elements.JSPElementNodeConverter;
 import com.cybernostics.jsp2thymeleaf.api.elements.JSPNodeConverterSource;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.XMLNS;
 import com.cybernostics.jsp2thymeleaf.api.elements.ScopedJSPConverters;
+import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
+import com.cybernostics.jsp2thymeleaf.api.util.MapUtils;
 import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
 import static com.cybernostics.jsp2thymeleaf.api.util.PrefixedName.prefixedNameFor;
 import com.cybernostics.jsp2thymeleaf.converters.jsp.JSPDirectiveConverterSource;
-import static com.cybernostics.jsp2thymeleaf.converters.jsp.TaglibDirectiveConverter.rex;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -62,6 +64,12 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     public static final String NEWLINE = System.getProperty("line.separator");
     final Logger logger = Logger.getLogger(JSP2ThymeleafTransformerListener.class.getName());
     private ScopedJSPConverters converters = new ScopedJSPConverters();
+    private final List<JSP2ThymeLeafException> problems = new ArrayList<>();
+
+    public List<JSP2ThymeLeafException> getProblems()
+    {
+        return problems;
+    }
 
     private Document doc = new Document();
     private Element currentElement;
@@ -144,17 +152,19 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     private JSPElementNodeConverter converterForNode(JSPParser.JspElementContext node)
     {
         PrefixedName domTag = prefixedNameFor(node.name.getText());
-        JSPNodeConverterSource converterSource1 = getConverterSource(domTag)
-                .orElseThrow(missing(domTag, node));
+        Optional<JSPNodeConverterSource> converterSource1 = getConverterSource(domTag);
+        final Optional<JSPElementNodeConverter> converterFor = converterSource1
+                .orElseGet(missingTaglib(domTag, node))
+                .converterFor(node);
 
-        return converterSource1.converterFor(node).orElseThrow(missing(domTag, node));
+        return converterFor.orElseGet(missingNodeConverter(domTag, node));
 
     }
 
     @Override
     public void enterScriptlet(ScriptletContext ctx)
     {
-        logger.log(Level.WARNING, "EVIL:Scriptlet detected and converted to comment. Over to you human." + ctx.getText());
+        logger.log(Level.SEVERE, "EVIL:Scriptlet detected and converted to comment. Over to you human." + ctx.getText());
         addContent(new Comment(ctx.getText()));
     }
 
@@ -164,8 +174,14 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
         logger.log(Level.FINE, "enterJspDirective" + ctx.getText());
 
         final Optional<JSPDirectiveConverter> converter = jspDirectives.converterFor(ctx);
-        final List<Content> content = converter.get().process(ctx, this);
-        addContent(content);
+        try
+        {
+            final List<Content> content = converter.get().process(ctx, this);
+            addContent(content);
+        } catch (JSP2ThymeLeafException exception)
+        {
+            problems.add(exception);
+        }
 
     }
 
@@ -182,9 +198,35 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
         return converters.forPrefix(domTag.getPrefix());
     }
 
-    private static Supplier<RuntimeException> missing(PrefixedName domTag, JSPParser.JspElementContext node)
+    private Supplier<JSPNodeConverterSource> missingTaglib(PrefixedName domTag, JSPParser.JspElementContext node)
     {
-        return rex("No converter source found for tag " + domTag, node);
+        return () ->
+        {
+            if (!domTag.getPrefix().isEmpty())
+            {
+                problems.add(MapUtils.rex("No taglib converter found for tag " + domTag + ". You need to add a converter lib", node).get());
+            }
+
+            return converters.forPrefix("").get();
+        };
+    }
+
+    private Supplier<JSPElementNodeConverter> missingNodeConverter(PrefixedName domTag, JSPParser.JspElementContext node)
+    {
+
+        return () ->
+        {
+            if (!domTag.getPrefix().isEmpty())
+            {
+                problems.add(MapUtils.rex("No node converter found for tag " + domTag, node).get());
+            }
+            return getDefaultCopyNodeConverter(node);
+        };
+    }
+
+    private JSPElementNodeConverter getDefaultCopyNodeConverter(JSPParser.JspElementContext node)
+    {
+        return converters.forPrefix("").get().converterFor(node).get();
     }
 
     private Element createFragmentDef(List<Content> contents)

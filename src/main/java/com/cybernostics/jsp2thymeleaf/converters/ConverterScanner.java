@@ -5,10 +5,11 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters;
 
-import com.cybernostics.jsp2thymeleaf.api.common.DefaultFunctionConverterSource;
 import com.cybernostics.jsp2thymeleaf.JSP2Thymeleaf;
 import com.cybernostics.jsp2thymeleaf.JSP2ThymeleafConfiguration;
+import com.cybernostics.jsp2thymeleaf.api.common.AvailableConverters;
 import com.cybernostics.jsp2thymeleaf.api.common.DefaultElementConverterSource;
+import com.cybernostics.jsp2thymeleaf.api.common.DefaultFunctionConverterSource;
 import com.cybernostics.jsp2thymeleaf.api.common.taglib.ConverterRegistration;
 import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
 import com.cybernostics.jsp2thymeleaf.api.expressions.function.FunctionConverterSource;
@@ -22,26 +23,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import static java.util.Arrays.stream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.joining;
 
 /**
- * Maintains a pool of available converters for taglibs based on the URI. In
- * some cases different or custom URIs are used to
+ * Scans for available converters on classpath
  *
  * @author jason
  */
-public class AvailableConverters
+public class ConverterScanner
 {
-
-    private static final Map<String, TagConverterSource> availableTagConverters = new HashMap<>();
-    private static final Map<String, FunctionConverterSource> availableExpressionConverters = new HashMap<>();
 
     public static void scanForConverters(JSP2ThymeleafConfiguration configuration)
     {
@@ -70,51 +64,24 @@ public class AvailableConverters
         }
     }
 
-    public static void addConverter(String forURI, TagConverterSource converterSource)
+    public void addConverter(String forURI, TagConverterSource converterSource)
     {
-        availableTagConverters.put(forURI, converterSource);
+        AvailableConverters.addConverter(forURI, converterSource);
     }
 
-    public static void addConverter(String forURI, FunctionConverterSource converterSource)
+    public void addConverter(String forURI, FunctionConverterSource converterSource)
     {
-        availableExpressionConverters.put(forURI, converterSource);
+        AvailableConverters.addConverter(forURI, converterSource);
     }
 
     public static void addConverter(TagConverterSource converterSource)
     {
-        availableTagConverters.put(converterSource.getTaglibURI(), converterSource);
+        AvailableConverters.addConverter(converterSource.getTaglibURI(), converterSource);
     }
 
     public static void addConverter(FunctionConverterSource converterSource)
     {
-        availableExpressionConverters.put(converterSource.getTaglibURI(), converterSource);
-    }
-
-    public static Optional<TagConverterSource> elementConverterforUri(String uri)
-    {
-        return Optional.ofNullable(availableTagConverters.getOrDefault(uri, null));
-    }
-
-    public static Optional<FunctionConverterSource> functionConverterforUri(String uri)
-    {
-        return Optional.ofNullable(availableExpressionConverters.getOrDefault(uri, null));
-    }
-
-    public static void addUriAlias(String existingUri, String aliasUri)
-    {
-        if (!availableTagConverters.containsKey(existingUri))
-        {
-            if (availableExpressionConverters.containsKey(existingUri))
-            {
-                throw new IllegalArgumentException("Unknown URI:" + existingUri);
-            } else
-            {
-                availableExpressionConverters.put(aliasUri, availableExpressionConverters.get(existingUri));
-            }
-        } else
-        {
-            availableTagConverters.put(aliasUri, availableTagConverters.get(existingUri));
-        }
+        AvailableConverters.addConverter(converterSource.getTaglibURI(), converterSource);
     }
 
     private static void loadAndRegister(String className)
@@ -164,7 +131,7 @@ public class AvailableConverters
                 stream(files)
                         .map(it -> scriptPath.resolve(it))
                         .filter(it -> it.toString().endsWith(".groovy") || it.toFile().isDirectory())
-                        .forEach(AvailableConverters::executeScript);
+                        .forEach(ConverterScanner::executeScript);
             } else
             {
                 try
@@ -175,7 +142,7 @@ public class AvailableConverters
                     shell.evaluate(groovyScript);
                 } catch (IOException ex)
                 {
-                    Logger.getLogger(AvailableConverters.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(ConverterScanner.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
             }
@@ -183,12 +150,6 @@ public class AvailableConverters
         {
             throw new IllegalArgumentException("Path does not exist:" + scriptPath);
         }
-    }
-
-    public static void reset()
-    {
-        availableTagConverters.clear();
-        availableExpressionConverters.clear();
     }
 
 }

@@ -7,7 +7,8 @@ package com.cybernostics.jsp2thymeleaf.plugins;
 
 import com.cybernostics.jsp2thymeleaf.JSP2ThymeleafConfiguration;
 import com.cybernostics.jsp2thymeleaf.JSP2ThymeleafConfiguration.JSP2ThymeleafConfigurationBuilder;
-import com.cybernostics.jsp2thymeleaf.converters.AvailableConverters;
+import com.cybernostics.jsp2thymeleaf.api.common.AvailableConverters;
+import static com.cybernostics.jsp2thymeleaf.converters.ConverterScanner.scanForConverters;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
@@ -39,7 +40,7 @@ public class JavaConverterRegistrationTest
         MatcherAssert.assertThat(AvailableConverters.functionConverterforUri("http://oldnamespace/fn").isPresent(), is(false));
 
         JSP2ThymeleafConfiguration configuration = JSP2ThymeleafConfiguration.parse("-p", "com.cybernostics.jsp2thymeleaf.plugins.converters.stub");
-        AvailableConverters.scanForConverters(configuration);
+        scanForConverters(configuration);
 
         MatcherAssert.assertThat(AvailableConverters.elementConverterforUri("http://oldnamespace").isPresent(), is(true));
         MatcherAssert.assertThat(AvailableConverters.functionConverterforUri("http://oldnamespace/fn").isPresent(), is(true));
@@ -53,7 +54,7 @@ public class JavaConverterRegistrationTest
         MatcherAssert.assertThat(AvailableConverters.functionConverterforUri("http://oldnamespace/fn").isPresent(), is(false));
         JSP2ThymeleafConfiguration configuration = new JSP2ThymeleafConfigurationBuilder()
                 .withConverterScripts(Paths.get(uri).toString()).build();
-        AvailableConverters.scanForConverters(configuration);
+        scanForConverters(configuration);
 
         MatcherAssert.assertThat(AvailableConverters.elementConverterforUri("http://oldnamespace").isPresent(), is(true));
         MatcherAssert.assertThat(AvailableConverters.functionConverterforUri("http://oldnamespace/fn").isPresent(), is(true));
