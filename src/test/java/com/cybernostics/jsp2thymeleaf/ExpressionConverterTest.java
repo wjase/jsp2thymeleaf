@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import org.apache.commons.el.parser.ParseException;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
@@ -47,7 +48,7 @@ public class ExpressionConverterTest
     private ScopedJSPConverters converters;
 
     @Test
-    public void expressionConverterShouldConvert()
+    public void expressionConverterShouldConvert() throws ParseException
     {
         ELExpressionConverter eLExpressionConverter = new ELExpressionConverter();
 

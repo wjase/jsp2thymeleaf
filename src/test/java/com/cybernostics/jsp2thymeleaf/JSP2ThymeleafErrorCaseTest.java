@@ -1,6 +1,7 @@
 package com.cybernostics.jsp2thymeleaf;
 
 import com.cybernostics.jsp2thymeleaf.api.common.TokenisedFile;
+import com.cybernostics.jsp2thymeleaf.api.elements.ScopedJSPConverters;
 import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
 import com.cybernostics.jsp2thymeleaf.converters.JSP2ThymeleafFileConverter;
 import java.io.File;
@@ -58,7 +59,7 @@ public class JSP2ThymeleafErrorCaseTest
         {
             TokenisedFile jspFileTok = new TokenisedFile(jspFile.toPath(), rootPath);
 
-            final List<JSP2ThymeLeafException> exceptions = jSP2Thymeleaf.convert(jspFileTok, randomOutFile);
+            final List<JSP2ThymeLeafException> exceptions = jSP2Thymeleaf.convert(jspFileTok, randomOutFile, new ScopedJSPConverters());
 
             assertThat(exceptions, IsIterableContainingInOrder.contains(getExpectedExceptionMatchers()));
 
@@ -82,7 +83,7 @@ public class JSP2ThymeleafErrorCaseTest
             return FileUtils.readLines(expectedErrorTextFilename,
                     Charset.defaultCharset())
                     .stream()
-                    .map(text -> exceptionWithMessage(text))
+                    .map(text -> exceptionWithMessage(text.replaceAll("#\\{file\\}", jspFile.getAbsolutePath())))
                     .collect(toList()).toArray(templateArray);
         } catch (IOException ex)
         {
@@ -117,7 +118,7 @@ public class JSP2ThymeleafErrorCaseTest
         @Override
         protected boolean matchesSafely(Exception item, Description mismatchDescription)
         {
-            if (item.getMessage().equals(expectedMessage))
+            if (item.getMessage().contains(expectedMessage))
             {
                 return true;
             }

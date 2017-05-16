@@ -1,0 +1,17 @@
+<!DOCTYPE html SYSTEM "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Thymeleaf Fragment Definition</title>
+    </head>
+    <body>
+        <h3>fortokens</h3>
+        <pre>&lt;c:fortokens var="item" delims="," items="fat,cat,sat,mat"&gt;
+This is item \${item}&lt;br/&gt;
+&lt;/c:fortokens&gt;</pre>
+        <th:block th:each="item : ${#strings.split('fat,cat,sat,mat',',')">
+            This is item
+            <span th:text="${item}" />
+            <br />
+        </th:block>
+    </body>
+</html>

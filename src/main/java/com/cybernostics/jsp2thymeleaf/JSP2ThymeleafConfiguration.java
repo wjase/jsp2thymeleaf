@@ -299,7 +299,7 @@ public class JSP2ThymeleafConfiguration
 
         public JSP2ThymeleafConfigurationBuilder withConverterPackages(String... packages)
         {
-            configuration.converterPackages = asList(packages);
+            configuration.converterPackages.addAll(asList(packages));
             return this;
         }
 

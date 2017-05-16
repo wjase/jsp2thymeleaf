@@ -22,7 +22,7 @@ public class JSPSyntaxException extends JSP2ThymeLeafException
     JSPSyntaxException(TokenisedFile file, Recognizer<?, ? extends ATNSimulator> rcgnzr, Object o, int line, int column, String message, RecognitionException re)
     {
         super(String.format("Syntax Error: %s", file.getRelativePathString(), message));
-        setLocationSource(() -> new DefaultFileErrorLocation(file.getRelativePathString(), line, column));
+        setLocationSource(() -> new DefaultFileErrorLocation(file.getPath().toString(), line, column));
 
     }
 

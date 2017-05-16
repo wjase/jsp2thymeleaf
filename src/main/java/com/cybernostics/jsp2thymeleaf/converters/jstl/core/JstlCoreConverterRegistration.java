@@ -5,15 +5,17 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.core;
 
-import com.cybernostics.jsp2thymeleaf.api.common.taglib.ConverterRegistration;
 import com.cybernostics.jsp2thymeleaf.api.common.AvailableConverters;
+import com.cybernostics.jsp2thymeleaf.api.common.taglib.ConverterRegistration;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.CN;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.TH;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.XMLNS;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.converterFor;
 import static com.cybernostics.jsp2thymeleaf.api.elements.NewAttributeBuilder.attributeNamed;
 import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
+import static com.cybernostics.jsp2thymeleaf.api.util.AlternateFormatStrings.constant;
 import static com.cybernostics.jsp2thymeleaf.api.util.AlternateFormatStrings.fromFormats;
+import static com.cybernostics.jsp2thymeleaf.util.ThymeleafUrl.formatUrl;
 
 /**
  *
@@ -26,14 +28,30 @@ public class JstlCoreConverterRegistration implements ConverterRegistration
     public void run()
     {
         final TagConverterSource jstlCoreTaglibConverterSource = new TagConverterSource()
-                .withConverters(
-                        converterFor("if")
+                .withConverters(converterFor("if")
+                        .withNewName("block", TH)
+                        .renamesAttribute("test", "if", TH),
+                        converterFor("choose")
+                                .withNewName("firstTrueChild", CN),
+                        converterFor("when")
                                 .withNewName("block", TH)
                                 .renamesAttribute("test", "if", TH),
+                        converterFor("otherwise")
+                                .withNewName("block", TH)
+                                .addsAttributes(
+                                        attributeNamed("test", TH)
+                                                .withValue(constant("${true}"))),
                         converterFor("out")
                                 .withNewName("span", XMLNS)
                                 .renamesAttribute("value", "text", TH)
                                 .withNewTextContent("%{value!humanReadable}"),
+                        converterFor("fortokens")
+                                .withNewName("block", TH)
+                                .removesAtributes("var", "varStatus", "items", "delims")
+                                .addsAttributes(
+                                        attributeNamed("each", TH)
+                                                .withValue(fromFormats(
+                                                        "%{var}%{varStatus|!addCommaPrefix} : ${#strings.split('%{items}'%{delims|!singleQuoted,addCommaPrefix})"))),
                         converterFor("foreach")
                                 .withNewName("block", TH)
                                 .removesAtributes("var", "begin", "end", "step", "varStatus", "items", "step")
@@ -56,7 +74,14 @@ public class JstlCoreConverterRegistration implements ConverterRegistration
                                 .addsAttributes(
                                         attributeNamed("text", TH)
                                                 .withValue(fromFormats("@{${value}}"))
-                                ));
+                                )
+                                .whenQuoted((node) ->
+                                {
+                                    node.checkRequiredParams("scope", "var");
+                                    return formatUrl(node.attAsValue("value"),
+                                            node.attAsValue("context"),
+                                            node.paramsBy("name", "value"));
+                                }));
 
         AvailableConverters.addConverter("http://java.sun.com/jstl/core", jstlCoreTaglibConverterSource);
         AvailableConverters.addConverter("http://java.sun.com/jsp/jstl/core", jstlCoreTaglibConverterSource);

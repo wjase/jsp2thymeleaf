@@ -6,8 +6,8 @@
 package com.cybernostics.jsp2thymeleaf;
 
 import com.cybernostics.jsp2thymeleaf.api.common.TokenisedFile;
+import com.cybernostics.jsp2thymeleaf.api.elements.ScopedJSPConverters;
 import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
-import static com.cybernostics.jsp2thymeleaf.converters.ConverterScanner.scanForConverters;
 import com.cybernostics.jsp2thymeleaf.converters.JSP2ThymeleafFileConverter;
 import java.io.File;
 import java.nio.file.Path;
@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -34,7 +35,6 @@ public class JSP2Thymeleaf
     public JSP2Thymeleaf(JSP2ThymeleafConfiguration configuration)
     {
         this.configuration = configuration;
-        scanForConverters(configuration);
         converter = new JSP2ThymeleafFileConverter(configuration);
         converter.setShowBanner(configuration.isShowBanner());
         exceptions = new ArrayList<>();
@@ -59,42 +59,51 @@ public class JSP2Thymeleaf
                 .sorted()
                 .collect(toMap(TokenisedFile::getPath, it -> it));
 
-        tokenisedFilesMap
+        return tokenisedFilesMap
                 .values()
                 .stream()
                 .sorted()
-                .forEachOrdered(eachInputFile -> convertFile(eachInputFile));
-        return exceptions;
+                .flatMap(eachInputFile -> convertFile(eachInputFile).stream())
+                .collect(Collectors.toList());
     }
+
     private Map<Path, TokenisedFile> tokenisedFilesMap;
 
-    private void convertFile(TokenisedFile eachInputFile)
+    private List<JSP2ThymeLeafException> convertFile(TokenisedFile eachInputFile)
     {
-        if (!alreadyProcessed.contains(eachInputFile))
+        return convertFile(eachInputFile, null);
+    }
+
+    private List<JSP2ThymeLeafException> convertFile(TokenisedFile fileToConvert, ScopedJSPConverters parentScope)
+    {
+        ScopedJSPConverters myConverter = new ScopedJSPConverters(parentScope);
+        List<JSP2ThymeLeafException> exceptions = new ArrayList<>();
+        if (!alreadyProcessed.contains(fileToConvert))
         {
-            final File outputFilePath = configuration.getOutputPathFor(eachInputFile.getFilePath()).toFile();
+            final File outputFilePath = configuration.getOutputPathFor(fileToConvert.getFilePath()).toFile();
             try
             {
-                logger.log(Level.INFO, "JSP2Thymeleaf processing:" + eachInputFile.toString());
-                exceptions.addAll(converter.convert(eachInputFile, outputFilePath));
+                logger.log(Level.INFO, "JSP2Thymeleaf processing:" + fileToConvert.toString());
+                exceptions.addAll(converter.convert(fileToConvert, outputFilePath, myConverter));
                 logger.log(Level.INFO, "JSP2Thymeleaf wrote:" + outputFilePath.toString());
-                eachInputFile.getIncludedPaths()
+                List<TokenisedFile> includedFiles = fileToConvert.getIncludedPaths()
                         .stream()
                         .map(path -> tokenisedFilesMap.get(path))
-                        .forEach(tokenisedFile -> convertFile(tokenisedFile));
-
-            } catch (JSP2ThymeLeafException exception)
-            {
-                exceptions.add(exception);
+                        .collect(Collectors.toList());
+                exceptions.addAll(
+                        includedFiles.stream()
+                                .flatMap(includedFile -> convertFile(includedFile, myConverter).stream())
+                                .collect(Collectors.toList()));
             } catch (Throwable exception)
             {
-                exceptions.add(JSP2ThymeLeafException.builder(exception).build());
+                exceptions.add(JSP2ThymeLeafException.jsp2ThymeLeafExceptionBuilder(exception).build());
             } finally
             {
-                alreadyProcessed.add(eachInputFile);
+                alreadyProcessed.add(fileToConvert);
             }
 
         }
+        return exceptions;
     }
 
 }

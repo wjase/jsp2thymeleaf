@@ -8,44 +8,54 @@ package com.cybernostics.jsp2thymeleaf.parser;
 import com.cybernostics.jsp.parser.JSPParser;
 import com.cybernostics.jsp.parser.JSPParser.DtdContext;
 import com.cybernostics.jsp.parser.JSPParser.HtmlChardataContext;
-import com.cybernostics.jsp.parser.JSPParser.HtmlCommentContext;
 import com.cybernostics.jsp.parser.JSPParser.JspDirectiveContext;
 import com.cybernostics.jsp.parser.JSPParser.JspElementContext;
 import com.cybernostics.jsp.parser.JSPParser.ScriptletContext;
 import com.cybernostics.jsp.parser.JSPParser.XhtmlCDATAContext;
 import com.cybernostics.jsp.parser.JSPParserBaseListener;
 import com.cybernostics.jsp2thymeleaf.api.common.Namespaces;
-import com.cybernostics.jsp2thymeleaf.api.elements.ActiveNamespaces;
+import static com.cybernostics.jsp2thymeleaf.api.common.Namespaces.TH;
+import com.cybernostics.jsp2thymeleaf.api.elements.ELExpressionConverter;
+import com.cybernostics.jsp2thymeleaf.api.elements.JSP2ThymeleafExpressionParseException;
 import com.cybernostics.jsp2thymeleaf.api.elements.JSPDirectiveConverter;
 import com.cybernostics.jsp2thymeleaf.api.elements.JSPElementNodeConverter;
 import com.cybernostics.jsp2thymeleaf.api.elements.JSPNodeConverterSource;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.XMLNS;
 import com.cybernostics.jsp2thymeleaf.api.elements.ScopedJSPConverters;
+import static com.cybernostics.jsp2thymeleaf.api.elements.ScopedJSPConverters.defaultSource;
 import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
 import com.cybernostics.jsp2thymeleaf.api.util.MapUtils;
+import com.cybernostics.jsp2thymeleaf.api.util.NoEscapeXMLOutputter;
 import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
 import static com.cybernostics.jsp2thymeleaf.api.util.PrefixedName.prefixedNameFor;
 import com.cybernostics.jsp2thymeleaf.converters.jsp.JSPDirectiveConverterSource;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import static java.util.stream.Collectors.toList;
-import org.antlr.v4.runtime.ParserRuleContext;
+import static java.util.stream.Collectors.toSet;
+import org.apache.commons.el.parser.ParseException;
+import org.jdom2.CDATA;
 import org.jdom2.Comment;
 import org.jdom2.Content;
 import org.jdom2.DocType;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.jdom2.Text;
 import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
+import org.jdom2.output.support.AbstractXMLOutputProcessor;
+import org.jdom2.output.support.FormatStack;
 
 /**
  *
@@ -54,16 +64,18 @@ import org.jdom2.output.XMLOutputter;
 public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener implements JSPElementNodeConverter
 {
 
-    public JSP2ThymeleafTransformerListener()
+    public JSP2ThymeleafTransformerListener(ScopedJSPConverters converters)
     {
         showBanner = false;
+        this.converters = converters;
     }
 
+    protected ELExpressionConverter expressionConverter = new ELExpressionConverter();
     private static final String THYMELEAF_DTD = "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd";
     private final Pattern whitespace = Pattern.compile("^\\s+$");
     public static final String NEWLINE = System.getProperty("line.separator");
     final Logger logger = Logger.getLogger(JSP2ThymeleafTransformerListener.class.getName());
-    private ScopedJSPConverters converters = new ScopedJSPConverters();
+    private ScopedJSPConverters converters;
     private final List<JSP2ThymeLeafException> problems = new ArrayList<>();
 
     public List<JSP2ThymeLeafException> getProblems()
@@ -78,12 +90,21 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
 
     public void write(OutputStream outputStream)
     {
-        XMLOutputter out = new XMLOutputter(
-                Format
-                        .getPrettyFormat()
-                        .setTextMode(Format.TextMode.NORMALIZE)
+        NoEscapeXMLOutputter out = new NoEscapeXMLOutputter(
+                Format.getPrettyFormat()
+                        .setEscapeStrategy(ch -> false)
+                        //                        .setTextMode(Format.TextMode.NORMALIZE)
                         .setLineSeparator(NEWLINE)
                         .setOmitDeclaration(true));
+        out.setXMLOutputProcessor(new AbstractXMLOutputProcessor()
+        {
+            @Override
+            protected void attributeEscapedEntitiesFilter(Writer out, FormatStack fstack, String value) throws IOException
+            {
+                write(out, value);
+            }
+
+        });
         try
         {
             out.output(doc, outputStream);
@@ -91,23 +112,23 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
         {
             Logger.getLogger(JSP2ThymeleafTransformerListener.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-    }
-
-    @Override
-    public void enterEveryRule(ParserRuleContext ctx)
-    {
-        super.enterEveryRule(ctx);
     }
 
     @Override
     public void enterJspElement(JspElementContext ctx)
     {
         logger.log(Level.FINE, "enterJspElement");
-        final JSPElementNodeConverter converterForNode = converterForNode(ctx);
-        final List<Content> content = converterForNode.process(ctx, this);
-        addContent(content);
-        pushElement(content);
+        try
+        {
+            final JSPElementNodeConverter converterForNode = converterForNode(ctx);
+            final List<Content> content = converterForNode.process(ctx, this);
+            addContent(content);
+            pushElement(content);
+
+        } catch (JSP2ThymeLeafException exception)
+        {
+            problems.add(exception);
+        }
     }
 
     @Override
@@ -124,7 +145,25 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
         if (doc.hasRootElement())
         {
             Element rootElement = doc.getRootElement();
-            ActiveNamespaces.get().forEach(ns -> rootElement.addNamespaceDeclaration(ns));
+            namespacesFor(rootElement).stream().filter(it -> !it.getPrefix().equals(rootElement.getNamespace().getPrefix())).forEach(ns -> rootElement.addNamespaceDeclaration(ns));
+        }
+    }
+
+    @Override
+    public void enterJspExpression(JSPParser.JspExpressionContext ctx)
+    {
+        try
+        {
+            super.enterJspExpression(ctx);
+            Element expression = new Element("span", XMLNS);
+            expression.setAttribute("text", expressionConverter.convert(ctx.getText(), converters), TH);
+            expression.removeNamespaceDeclaration(XMLNS);
+            addContent(expression);
+        } catch (ParseException ex)
+        {
+            problems.add(new JSP2ThymeleafExpressionParseException(ex, ctx.start.getLine(), ctx.start.getCharPositionInLine()));
+            Logger.getLogger(JSP2ThymeleafTransformerListener.class.getName()).log(Level.SEVERE, null, ex);
+            addContent(new Comment("Expression with errors:" + ctx.getText()));
         }
     }
 
@@ -132,20 +171,28 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     public void enterXhtmlCDATA(XhtmlCDATAContext ctx)
     {
         logger.log(Level.FINE, "enterXhtmlCDATA" + ctx.getText());
-        addContent(new Text(ctx.getText()));
+        addContent(new CDATA(unEscapeText(ctx.getText())));
     }
 
     @Override
     public void enterHtmlChardata(HtmlChardataContext ctx)
     {
         logger.log(Level.FINE, "enterHtmlCharData" + ctx.getText());
-        addContent(new Text(ctx.getText()));
+        addContent(new Text(unEscapeText(ctx.getText())));
+    }
+
+    private String unEscapeText(String s)
+    {
+        return s.replaceAll("&lt;", "<")
+                .replaceAll("&gt;", ">")
+                .replaceAll("&amp;", "&")
+                .replaceAll("&#xD;", "\r");
     }
 
     @Override
-    public void enterHtmlComment(HtmlCommentContext ctx)
+    public void enterHtmlCommentText(JSPParser.HtmlCommentTextContext ctx)
     {
-        logger.log(Level.FINE, "enterHtmlComment" + ctx.getText());
+        logger.log(Level.FINE, "enterHtmlCommentText" + ctx.getText());
         addContent(new Comment(ctx.getText()));
     }
 
@@ -173,9 +220,9 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     {
         logger.log(Level.FINE, "enterJspDirective" + ctx.getText());
 
-        final Optional<JSPDirectiveConverter> converter = jspDirectives.converterFor(ctx);
         try
         {
+            final Optional<JSPDirectiveConverter> converter = jspDirectives.converterFor(ctx);
             final List<Content> content = converter.get().process(ctx, this);
             addContent(content);
         } catch (JSP2ThymeLeafException exception)
@@ -207,7 +254,7 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
                 problems.add(MapUtils.rex("No taglib converter found for tag " + domTag + ". You need to add a converter lib", node).get());
             }
 
-            return converters.forPrefix("").get();
+            return defaultSource();
         };
     }
 
@@ -226,14 +273,13 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
 
     private JSPElementNodeConverter getDefaultCopyNodeConverter(JSPParser.JspElementContext node)
     {
-        return converters.forPrefix("").get().converterFor(node).get();
+        return defaultSource().converterFor(node).get();
     }
 
     private Element createFragmentDef(List<Content> contents)
     {
         Element html = new Element("html", XMLNS);
 
-        ActiveNamespaces.get().forEach(ns -> html.addNamespaceDeclaration(ns));
         html.addContent(NEWLINE);
         Element head = new Element("head", XMLNS);
         html.addContent(head);
@@ -248,7 +294,16 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
         html.addContent(NEWLINE);
         body.addContent(contents);
         currentElement = body;
+        namespacesFor(html).stream().filter(it -> !it.getPrefix().equals(html.getNamespace().getPrefix())).forEach(ns -> html.addNamespaceDeclaration(ns));
         return html;
+    }
+
+    private static Set<Namespace> namespacesFor(Element html)
+    {
+        Set<Namespace> namespaces = new HashSet<Namespace>();
+        namespaces.addAll(html.getNamespacesInScope());
+        namespaces.addAll(html.getChildren().stream().flatMap(it -> namespacesFor(it).stream()).collect(toSet()));
+        return namespaces;
     }
 
     @Override
@@ -329,18 +384,22 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
 
     private void addContent(List<Content> content)
     {
-        if (currentElement == null)
+        if (!content.isEmpty())
         {
-            content = rootContentFor(content);
             if (currentElement == null)
             {
-                currentElement = (Element) content.stream().filter(JSP2ThymeleafTransformerListener::isHtmlElement).findFirst().get();
-            }
-            doc.addContent(content);
+                content = rootContentFor(content);
+                if (currentElement == null)
+                {
+                    currentElement = (Element) content.stream().filter(JSP2ThymeleafTransformerListener::isHtmlElement).findFirst().get();
+                }
+                doc.addContent(content);
 
-        } else
-        {
-            currentElement.addContent(content);
+            } else
+            {
+                currentElement.addContent(content);
+            }
+
         }
 
     }
@@ -375,6 +434,12 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     public void setScopedConverters(ScopedJSPConverters scopedConverters)
     {
         converters = scopedConverters;
+    }
+
+    @Override
+    public String processAsAttributeValue(JSPParser.HtmlQuotedElementContext node, JSPElementNodeConverter context)
+    {
+        throw new UnsupportedOperationException("Not supported ever.");
     }
 
 }

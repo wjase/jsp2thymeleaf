@@ -28,13 +28,12 @@ public class TaglibDirectiveConverter implements JSPDirectiveConverter
     @Override
     public List<Content> process(JSPParser.JspDirectiveContext node, JSPElementNodeConverter context)
     {
-
         String prefix = getAttribute(node, "prefix")
                 .map(att -> trimQuotes(att.value.getText()))
-                .orElseThrow(MapUtils.rex("missing taglib prefix attribute", node)).toString();
+                .orElseThrow(MapUtils.rex("Missing jsp taglib directive attribute: prefix", node)).toString();
         String uri = getAttribute(node, "uri")
                 .map(att -> trimQuotes(att.value.getText()))
-                .orElseThrow(MapUtils.rex("Missing taglib uri attribute", node)).toString();
+                .orElseThrow(MapUtils.rex("Missing jsp taglib directive: uri", node)).toString();
 
         final Optional<TagConverterSource> taglibConverter = AvailableConverters.elementConverterforUri(uri);
         if (taglibConverter.isPresent())

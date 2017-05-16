@@ -2,6 +2,7 @@ package com.cybernostics.jsp2thymeleaf;
 
 import com.cybernostics.jsp2thymeleaf.api.common.TokenisedFile;
 import com.cybernostics.jsp2thymeleaf.api.elements.ActiveNamespaces;
+import com.cybernostics.jsp2thymeleaf.api.elements.ScopedJSPConverters;
 import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
 import com.cybernostics.jsp2thymeleaf.converters.JSP2ThymeleafFileConverter;
 import java.io.File;
@@ -64,7 +65,7 @@ public class JSP2ThymeleafHappyCaseTest
 
             File randomOutFile = File.createTempFile("happyCaseTest", ".jsp");
 
-            final List<JSP2ThymeLeafException> errors = jSP2Thymeleaf.convert(jspFileTok, randomOutFile);
+            final List<JSP2ThymeLeafException> errors = jSP2Thymeleaf.convert(jspFileTok, randomOutFile, new ScopedJSPConverters());
             assertThat(errors, is(empty()));
             final String convertedContent = FileUtils.readFileToString(randomOutFile, Charset.defaultCharset());
             LOG.info("\n" + convertedContent);
@@ -99,7 +100,7 @@ public class JSP2ThymeleafHappyCaseTest
         return Arrays.asList(file.listFiles())
                 .stream()
                 .filter(it -> it.getName().contains("jsp"))
-                //                .filter(it -> it.getName().contains("cif"))
+                //                .filter(it -> it.getName().contains("curl"))
                 .sorted();
     }
 }
