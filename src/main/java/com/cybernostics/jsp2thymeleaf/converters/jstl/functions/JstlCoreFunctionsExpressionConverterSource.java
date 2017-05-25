@@ -5,9 +5,9 @@
  */
 package com.cybernostics.jsp2thymeleaf.converters.jstl.functions;
 
+import com.cybernostics.jsp2thymeleaf.api.expressions.ExpressionVisitor;
 import static com.cybernostics.jsp2thymeleaf.api.expressions.function.DefaultFunctionExpressionConverter.convertsMethodCall;
 import com.cybernostics.jsp2thymeleaf.api.expressions.function.FunctionConverterSource;
-import com.cybernostics.jsp2thymeleaf.api.expressions.ExpressionVisitor;
 import com.cybernostics.jsp2thymeleaf.api.util.SimpleStringTemplateProcessor;
 import java.util.Arrays;
 import java.util.List;
@@ -62,7 +62,7 @@ public class JstlCoreFunctionsExpressionConverterSource extends FunctionConverte
 
     private String format(String methodFormat, String method)
     {
-        Map<String, String> values = new TreeMap<>();
+        Map<String, Object> values = new TreeMap<>();
         values.put("method", method);
         return SimpleStringTemplateProcessor.generate(methodFormat, values);
     }

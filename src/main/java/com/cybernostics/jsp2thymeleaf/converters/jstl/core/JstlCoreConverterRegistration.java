@@ -11,6 +11,7 @@ import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.TH;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.XMLNS;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.converterFor;
+import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.ignore;
 import static com.cybernostics.jsp2thymeleaf.api.elements.NewAttributeBuilder.attributeNamed;
 import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
 import static com.cybernostics.jsp2thymeleaf.api.util.AlternateFormatStrings.constant;
@@ -69,19 +70,29 @@ public class JstlCoreConverterRegistration implements ConverterRegistration
                                                         fromFormats("${#CNPageParams.put%{scope|page!ucFirst}(%{var},%{value!stripEL})}"))
                                 ),
                         converterFor("url")
+                                .withChildElementAtributes((nodeAndContext) ->
+                                {
+                                    return nodeAndContext.paramsBy("name", "value");
+                                })
                                 .withNewName("span", XMLNS)
                                 .removesAtributes("value", "var", "scope", "context")
                                 .addsAttributes(
                                         attributeNamed("text", TH)
-                                                .withValue(fromFormats("@{${value}}"))
+                                                .withValue(fromFormats(
+                                                        "@{~%{context}%{value}}(%{_childAtts!kvMap})",
+                                                        "@{%{value}}(%{_childAtts!kvMap})",
+                                                        "@{~%{context}%{value}}",
+                                                        "@{%{value}}"))
                                 )
                                 .whenQuoted((node) ->
                                 {
-                                    node.checkRequiredParams("scope", "var");
+                                    node.warnParamsNotInQuoted("scope", "var");
                                     return formatUrl(node.attAsValue("value"),
                                             node.attAsValue("context"),
                                             node.paramsBy("name", "value"));
-                                }));
+                                }),
+                        ignore("param")
+                );
 
         AvailableConverters.addConverter("http://java.sun.com/jstl/core", jstlCoreTaglibConverterSource);
         AvailableConverters.addConverter("http://java.sun.com/jsp/jstl/core", jstlCoreTaglibConverterSource);

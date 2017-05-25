@@ -100,7 +100,7 @@ public class JSP2ThymeleafHappyCaseTest
         return Arrays.asList(file.listFiles())
                 .stream()
                 .filter(it -> it.getName().contains("jsp"))
-                //                .filter(it -> it.getName().contains("curl"))
+                .filter(it -> it.getName().contains("curl"))
                 .sorted();
     }
 }

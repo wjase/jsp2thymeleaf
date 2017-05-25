@@ -64,36 +64,35 @@ import org.jdom2.output.support.FormatStack;
 public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener implements JSPElementNodeConverter
 {
 
+    private Document doc = new Document();
+    private Element currentElement;
+    private JSPDirectiveConverterSource jspDirectives = new JSPDirectiveConverterSource();
+    protected ELExpressionConverter expressionConverter = new ELExpressionConverter();
+    private final Logger logger = Logger.getLogger(JSP2ThymeleafTransformerListener.class.getName());
+    private static final String THYMELEAF_DTD = "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd";
+    private final Pattern whitespace = Pattern.compile("^\\s+$");
+    private final List<JSP2ThymeLeafException> problems = new ArrayList<>();
+    private ScopedJSPConverters converters;
+    private boolean showBanner;
+
+    public static final String NEWLINE = System.getProperty("line.separator");
+
     public JSP2ThymeleafTransformerListener(ScopedJSPConverters converters)
     {
         showBanner = false;
         this.converters = converters;
     }
 
-    protected ELExpressionConverter expressionConverter = new ELExpressionConverter();
-    private static final String THYMELEAF_DTD = "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd";
-    private final Pattern whitespace = Pattern.compile("^\\s+$");
-    public static final String NEWLINE = System.getProperty("line.separator");
-    final Logger logger = Logger.getLogger(JSP2ThymeleafTransformerListener.class.getName());
-    private ScopedJSPConverters converters;
-    private final List<JSP2ThymeLeafException> problems = new ArrayList<>();
-
     public List<JSP2ThymeLeafException> getProblems()
     {
         return problems;
     }
-
-    private Document doc = new Document();
-    private Element currentElement;
-
-    private JSPDirectiveConverterSource jspDirectives = new JSPDirectiveConverterSource();
 
     public void write(OutputStream outputStream)
     {
         NoEscapeXMLOutputter out = new NoEscapeXMLOutputter(
                 Format.getPrettyFormat()
                         .setEscapeStrategy(ch -> false)
-                        //                        .setTextMode(Format.TextMode.NORMALIZE)
                         .setLineSeparator(NEWLINE)
                         .setOmitDeclaration(true));
         out.setXMLOutputProcessor(new AbstractXMLOutputProcessor()
@@ -103,7 +102,6 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
             {
                 write(out, value);
             }
-
         });
         try
         {
@@ -350,7 +348,6 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
         }
         return Arrays.asList(new DocType("html", THYMELEAF_DTD), htmlElement);
     }
-    private boolean showBanner;
 
     private static Boolean isHtmlElement(Content content)
     {
@@ -389,10 +386,7 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
             if (currentElement == null)
             {
                 content = rootContentFor(content);
-                if (currentElement == null)
-                {
-                    currentElement = (Element) content.stream().filter(JSP2ThymeleafTransformerListener::isHtmlElement).findFirst().get();
-                }
+                currentElement = (Element) content.stream().filter(JSP2ThymeleafTransformerListener::isHtmlElement).findFirst().get();
                 doc.addContent(content);
 
             } else
@@ -406,9 +400,13 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
 
     private void pushElement(List<Content> content)
     {
-        final List<Content> elements = content.stream().filter(it -> it instanceof Element).collect(toList());
-        currentElement = (Element) elements.get(elements.size() - 1);
 
+        // push to stack if empty push current element (duped) in place of skipped element
+        final List<Content> elements = content.stream().filter(it -> it instanceof Element).collect(toList());
+        if (!elements.isEmpty())
+        {
+            currentElement = (Element) elements.get(elements.size() - 1);
+        }
     }
 
     private void popElement()
@@ -416,6 +414,7 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
         if (currentElement != null)
         {
             currentElement = currentElement.getParentElement();
+            currentElement.removeChildren("deleteme");
         }
     }
 
@@ -437,7 +436,7 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     }
 
     @Override
-    public String processAsAttributeValue(JSPParser.HtmlQuotedElementContext node, JSPElementNodeConverter context)
+    public String processAsAttributeValue(JSPParser.JspQuotedElementContext node, JSPElementNodeConverter context)
     {
         throw new UnsupportedOperationException("Not supported ever.");
     }
