@@ -24,6 +24,7 @@ import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter
 import com.cybernostics.jsp2thymeleaf.api.elements.ScopedJSPConverters;
 import static com.cybernostics.jsp2thymeleaf.api.elements.ScopedJSPConverters.defaultSource;
 import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
+import com.cybernostics.jsp2thymeleaf.api.exception.JSPNodeException;
 import com.cybernostics.jsp2thymeleaf.api.util.MapUtils;
 import com.cybernostics.jsp2thymeleaf.api.util.NoEscapeXMLOutputter;
 import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
@@ -45,6 +46,7 @@ import java.util.regex.Pattern;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import org.apache.commons.el.parser.ParseException;
+import org.jdom2.Attribute;
 import org.jdom2.CDATA;
 import org.jdom2.Comment;
 import org.jdom2.Content;
@@ -134,7 +136,14 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     {
         logger.log(Level.FINE, "exitJspElement");
 
-        popElement();
+        try
+        {
+            popElement();
+
+        } catch (Exception e)
+        {
+            problems.add(new JSPNodeException(e.getMessage(), e, ctx));
+        }
     }
 
     @Override
@@ -413,8 +422,26 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     {
         if (currentElement != null)
         {
-            currentElement = currentElement.getParentElement();
-            currentElement.removeChildren("deleteme");
+            Element childElement = currentElement;
+            currentElement = childElement.getParentElement();
+            Attribute replaceParentAttributeName = childElement.getAttribute("data-replace-parent-attribute-name");
+            if (replaceParentAttributeName != null)
+            {
+                String parentAttributeName = replaceParentAttributeName.getValue();
+                Attribute replaceParentAttributeValue = childElement.getAttributes()
+                        .stream()
+                        .filter(it -> it.getName().equals("data-replace-parent-attribute-value"))
+                        .findFirst().orElseThrow(() -> new RuntimeException("Unable to convert element embedded in attribute. Add a whenQuotedInAttributeReplaceWith drective to your element converter registration for this element."));
+                currentElement.removeAttribute(parentAttributeName);
+                currentElement.setAttribute(parentAttributeName, replaceParentAttributeValue.getValue(), replaceParentAttributeValue.getNamespace());
+            }
+            if (currentElement != null)
+            {
+                currentElement.getChildren()
+                        .stream()
+                        .filter(it -> it.getName().equals("deleteme"))
+                        .forEach(it -> currentElement.removeChild(it.getName(), it.getNamespace()));
+            }
         }
     }
 
@@ -433,12 +460,6 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     public void setScopedConverters(ScopedJSPConverters scopedConverters)
     {
         converters = scopedConverters;
-    }
-
-    @Override
-    public String processAsAttributeValue(JSPParser.JspQuotedElementContext node, JSPElementNodeConverter context)
-    {
-        throw new UnsupportedOperationException("Not supported ever.");
     }
 
 }

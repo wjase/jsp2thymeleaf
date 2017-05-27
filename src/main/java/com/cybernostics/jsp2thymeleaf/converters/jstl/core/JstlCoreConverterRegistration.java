@@ -12,11 +12,11 @@ import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.XMLNS;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.converterFor;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.ignore;
-import static com.cybernostics.jsp2thymeleaf.api.elements.NewAttributeBuilder.attributeNamed;
+import static com.cybernostics.jsp2thymeleaf.api.elements.NewAttributeBuilder.named;
+import static com.cybernostics.jsp2thymeleaf.api.elements.NewAttributeBuilder.namedTH;
 import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
 import static com.cybernostics.jsp2thymeleaf.api.util.AlternateFormatStrings.constant;
 import static com.cybernostics.jsp2thymeleaf.api.util.AlternateFormatStrings.fromFormats;
-import static com.cybernostics.jsp2thymeleaf.util.ThymeleafUrl.formatUrl;
 
 /**
  *
@@ -39,35 +39,32 @@ public class JstlCoreConverterRegistration implements ConverterRegistration
                                 .renamesAttribute("test", "if", TH),
                         converterFor("otherwise")
                                 .withNewName("block", TH)
-                                .addsAttributes(
-                                        attributeNamed("test", TH)
-                                                .withValue(constant("${true}"))),
+                                .addsAttributes(namedTH("test")
+                                        .withValue(constant("${true}"))),
                         converterFor("out")
                                 .withNewName("span", XMLNS)
                                 .renamesAttribute("value", "text", TH)
+                                .whenQuotedInAttributeReplaceWith("text")
                                 .withNewTextContent("%{value!humanReadable}"),
                         converterFor("fortokens")
                                 .withNewName("block", TH)
                                 .removesAtributes("var", "varStatus", "items", "delims")
-                                .addsAttributes(
-                                        attributeNamed("each", TH)
-                                                .withValue(fromFormats(
-                                                        "%{var}%{varStatus|!addCommaPrefix} : ${#strings.split('%{items}'%{delims|!singleQuoted,addCommaPrefix})"))),
+                                .addsAttributes(namedTH("each")
+                                        .withValue(fromFormats(
+                                                "%{var}%{varStatus|!addCommaPrefix} : ${#strings.split('%{items}'%{delims|!singleQuoted,addCommaPrefix})"))),
                         converterFor("foreach")
                                 .withNewName("block", TH)
                                 .removesAtributes("var", "begin", "end", "step", "varStatus", "items", "step")
-                                .addsAttributes(
-                                        attributeNamed("each", TH)
-                                                .withValue(fromFormats(
-                                                        "%{var}%{varStatus|!addCommaPrefix} : %{items}",
-                                                        "%{var}%{varStatus|!addCommaPrefix} : ${#numbers.sequence(%{begin},%{end}%{step|!addCommaPrefix})}"))),
+                                .addsAttributes(namedTH("each")
+                                        .withValue(fromFormats(
+                                                "%{var}%{varStatus|!addCommaPrefix} : %{items}",
+                                                "%{var}%{varStatus|!addCommaPrefix} : ${#numbers.sequence(%{begin},%{end}%{step|!addCommaPrefix})}"))),
                         converterFor("set")
                                 .withNewName("block", TH)
                                 .removesAtributes("var", "scope", "value")
-                                .addsAttributes(
-                                        attributeNamed("expr", CN)
-                                                .withValue(
-                                                        fromFormats("${#CNPageParams.put%{scope|page!ucFirst}(%{var},%{value!stripEL})}"))
+                                .addsAttributes(named("expr", CN)
+                                        .withValue(
+                                                fromFormats("${#CNPageParams.put%{scope|page!ucFirst}(%{var},%{value!stripEL})}"))
                                 ),
                         converterFor("url")
                                 .withChildElementAtributes((nodeAndContext) ->
@@ -76,21 +73,14 @@ public class JstlCoreConverterRegistration implements ConverterRegistration
                                 })
                                 .withNewName("span", XMLNS)
                                 .removesAtributes("value", "var", "scope", "context")
-                                .addsAttributes(
-                                        attributeNamed("text", TH)
-                                                .withValue(fromFormats(
-                                                        "@{~%{context}%{value}}(%{_childAtts!kvMap})",
-                                                        "@{%{value}}(%{_childAtts!kvMap})",
-                                                        "@{~%{context}%{value}}",
-                                                        "@{%{value}}"))
+                                .addsAttributes(namedTH("text")
+                                        .withValue(fromFormats(
+                                                "@{~%{context}%{value}(%{_childAtts!kvMap})}",
+                                                "@{%{value}(%{_childAtts!kvMap})}",
+                                                "@{~%{context}%{value}}",
+                                                "@{%{value}}"))
                                 )
-                                .whenQuoted((node) ->
-                                {
-                                    node.warnParamsNotInQuoted("scope", "var");
-                                    return formatUrl(node.attAsValue("value"),
-                                            node.attAsValue("context"),
-                                            node.paramsBy("name", "value"));
-                                }),
+                                .whenQuotedInAttributeReplaceWith("text"),
                         ignore("param")
                 );
 
