@@ -4,16 +4,18 @@
         <title>Thymeleaf Fragment Definition</title>
     </head>
     <body>
-        <h3>Choose/When</h3>
-        <pre>&lt;c:choose&gt;
+        <th:block th:fragment="content">
+            <h3>Choose/When</h3>
+            <pre>&lt;c:choose&gt;
     &lt;c:when test="\${false}"&gt;Should not contain this as the test is false.&lt;/c:when&gt;
     &lt;c:when test="\${true}"&gt;Should contain this as the test is true.&lt;/c:when&gt;
     &lt;c:otherwise&gt;Shouldn't contain this as the previous condition matched&lt;/c:otherwise&gt;
 &lt;/c:choose&gt;</pre>
-        <cn:firstTrueChild>
-            <th:block th:if="${false}">Should not contain this as the test is false.</th:block>
-            <th:block th:if="${true}">Should contain this as the test is true.</th:block>
-            <th:block th:test="${true}">Shouldn't contain this as the previous condition matched</th:block>
-        </cn:firstTrueChild>
+            <th:block cn:filter="first">
+                <th:block th:if="${false}">Should not contain this as the test is false.</th:block>
+                <th:block th:if="${true}">Should contain this as the test is true.</th:block>
+                <th:block th:test="${true}">Shouldn't contain this as the previous condition matched</th:block>
+            </th:block>
+        </th:block>
     </body>
 </html>

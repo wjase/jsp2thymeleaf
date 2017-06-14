@@ -69,7 +69,7 @@ public class JSP2ThymeleafHappyCaseTest
             assertThat(errors, is(empty()));
             final String convertedContent = FileUtils.readFileToString(randomOutFile, Charset.defaultCharset());
             LOG.info("\n" + convertedContent);
-            assertThat(convertedContent.replaceAll("\\s+", " "), is(expectedContent.replaceAll("\\s+", " ")));
+            assertThat(expectedThymeleafFileContent.getName() + ":\n", convertedContent.replaceAll("\\s+", " ").trim(), is(expectedContent.replaceAll("\\s+", " ").trim()));
         } catch (IOException ex)
         {
             Logger.getLogger(JSP2ThymeleafHappyCaseTest.class.getName()).log(Level.SEVERE, null, ex);

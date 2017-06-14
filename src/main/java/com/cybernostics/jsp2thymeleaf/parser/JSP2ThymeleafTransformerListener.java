@@ -299,7 +299,11 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
         Element body = new Element("body", XMLNS);
         html.addContent(body);
         html.addContent(NEWLINE);
-        body.addContent(contents);
+        Element blockContainer = new Element("block", TH);
+        body.addContent(blockContainer);
+        blockContainer.setAttribute("fragment", "content", TH);
+        blockContainer.addContent(contents);
+        blockContainer.addContent(NEWLINE);
         currentElement = body;
         namespacesFor(html).stream().filter(it -> !it.getPrefix().equals(html.getNamespace().getPrefix())).forEach(ns -> html.addNamespaceDeclaration(ns));
         return html;
@@ -338,6 +342,7 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
             trimTrailingWhitespace(amendedContents);
             htmlElement.addContent(amendedContents);
             htmlElement.setNamespace(Namespaces.XMLNS);
+            htmlElement.setAttribute("fragment", "content", TH);
 
             return elementWithDocTypeIfNeeded(htmlElement);
         } else

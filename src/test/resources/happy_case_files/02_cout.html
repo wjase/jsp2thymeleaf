@@ -4,7 +4,9 @@
         <title>Thymeleaf Fragment Definition</title>
     </head>
     <body>
-        <span th:text="${param.name}">ParamName</span>
-        <input th:value="${param.name}" />
+        <th:block th:fragment="content">
+            <span th:text="${param.name}">ParamName</span>
+            <input th:value="${param.name}" />
+        </th:block>
     </body>
 </html>

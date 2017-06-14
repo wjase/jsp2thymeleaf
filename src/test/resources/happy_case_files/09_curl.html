@@ -4,12 +4,13 @@
         <title>Thymeleaf Fragment Definition</title>
     </head>
     <body>
-        <span th:text="@{/root/path/here}" />
-        <span th:text="@{~acontext/root/path/here}" />
-        <span th:text="@{~acontext/root/path/here(somekey=${value},somekey2='literal')}" />
-        <a th:href="@{/embedded/path}">Some Link</a>
-        <a th:href="@{~acontext/embedded/path}">Some Link</a>
-        <a th:href="@{/embedded/path(somekey=${value},somekey2='literal')}">Some Link</a>
+        <th:block th:fragment="content">
+            <span th:text="${pageParams.put('someVar',@{/root/path/here})" />
+            <span th:text="${pageParams.put('someVar',@{~acontext/root/path/here})" />
+            <span th:text="${pageParams.put('someVar',@{~acontext/root/path/here(somekey=${value},somekey2='literal')})" />
+            <a th:href="@{/embedded/path}">Some Link</a>
+            <a th:href="@{~acontext/embedded/path}">Some Link</a>
+            <a th:href="@{/embedded/path(somekey=${value},somekey2='literal')}">Some Link</a>
+        </th:block>
     </body>
 </html>
-

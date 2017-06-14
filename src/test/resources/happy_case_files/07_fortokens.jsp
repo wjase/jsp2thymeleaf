@@ -1,10 +1,10 @@
 <%@ taglib uri='http://java.sun.com/jstl/core' prefix='c' %> 
-<h3>fortokens</h3>
+<h3>forTokens</h3>
 <pre>
-&lt;c:fortokens var="item" delims="," items="fat,cat,sat,mat"&gt;
+&lt;c:forTokens var="item" delims="," items="fat,cat,sat,mat"&gt;
 This is item \${item}&lt;br/&gt;
-&lt;/c:fortokens&gt;
+&lt;/c:forTokens&gt;
 </pre>
-<c:fortokens var="item" delims="," items="fat,cat,sat,mat">
+<c:forTokens var="item" delims="," items="fat,cat,sat,mat">
     This is item ${item}<br/>
-</c:fortokens>
+</c:forTokens>

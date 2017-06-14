@@ -4,16 +4,18 @@
         <title>Thymeleaf Fragment Definition</title>
     </head>
     <body>
-        <h3>foreach - Form 1 (List iterator)</h3>
-        <pre>&lt;c:foreach var="item" items="\${fn:splitTokens('red,green,blue')}" varStatus="status"&gt;
+        <th:block th:fragment="content">
+            <h3>forEach - Form 1 (List iterator)</h3>
+            <pre>&lt;c:forEach var="item" items="\${fn:splitTokens('red,green,blue')}" varStatus="status"&gt;
 This is item \${item}. Status is \${status.index}&lt;br/&gt;
-&lt;/c:foreach&gt;</pre>
-        <th:block th:each="item,status : ${#strings.split("red,green,blue")}">
-                  This is item
-                  <span th:text="${item}" />
-            . Status is
-            <span th:text="${status.index}" />
-            <br />
+&lt;/c:forEach&gt;</pre>
+            <th:block th:each="item,status : ${#strings.split("red,green,blue")}">
+                      This is item
+                      <span th:text="${item}" />
+                . Status is
+                <span th:text="${status.index}" />
+                <br />
+            </th:block>
         </th:block>
     </body>
 </html>
