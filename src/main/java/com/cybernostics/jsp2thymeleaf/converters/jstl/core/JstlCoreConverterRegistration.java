@@ -7,7 +7,6 @@ package com.cybernostics.jsp2thymeleaf.converters.jstl.core;
 
 import com.cybernostics.jsp2thymeleaf.api.common.AvailableConverters;
 import com.cybernostics.jsp2thymeleaf.api.common.taglib.ConverterRegistration;
-import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.CN;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.TH;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.XMLNS;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.converterFor;
@@ -35,15 +34,15 @@ public class JstlCoreConverterRegistration implements ConverterRegistration
                                 .renamesAttribute("test", "if", TH),
                         converterFor("choose")
                                 .withNewName("block", TH)
-                                .addsAttributes(named("filter", CN)
-                                        .withValue(constant("first"))),
+                                .addsAttributes(named("choose", TH)
+                                        .withValue(constant(""))),
                         converterFor("when")
                                 .withNewName("block", TH)
-                                .renamesAttribute("test", "if", TH),
+                                .renamesAttribute("test", "when", TH),
                         converterFor("otherwise")
                                 .withNewName("block", TH)
-                                .addsAttributes(namedTH("test")
-                                        .withValue(constant("${true}"))),
+                                .addsAttributes(namedTH("otherwise")
+                                        .withValue(constant(""))),
                         converterFor("out")
                                 .withNewName("span", XMLNS)
                                 .removesAtributes("value", "var", "scope", "context")

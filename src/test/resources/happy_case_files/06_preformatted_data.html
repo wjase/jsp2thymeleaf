@@ -9,13 +9,13 @@
             <pre>&lt;c:forEach var="item" items="\${fn:splitTokens('red,green,blue')}" varStatus="status"&gt;
 This is item \${item}. Status is \${status.index}&lt;br/&gt;
 &lt;/c:forEach&gt;</pre>
-            <th:block th:each="item,status : ${#strings.split("red,green,blue")}">
-                      This is item
-                      <span th:text="${item}" />
+            <span th:each="item,status : ${#strings.split("red,green,blue")}">
+                  This is item
+                  <span th:text="${item}" />
                 . Status is
                 <span th:text="${status.index}" />
                 <br />
-            </th:block>
+            </span>
         </th:block>
     </body>
 </html>

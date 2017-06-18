@@ -1,5 +1,5 @@
 <!DOCTYPE html SYSTEM "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:cn="http://www.cybernostics.com" xmlns:th="http://www.thymeleaf.org">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
     <head>
         <title>Thymeleaf Fragment Definition</title>
     </head>
@@ -11,11 +11,11 @@
     &lt;c:when test="\${true}"&gt;Should contain this as the test is true.&lt;/c:when&gt;
     &lt;c:otherwise&gt;Shouldn't contain this as the previous condition matched&lt;/c:otherwise&gt;
 &lt;/c:choose&gt;</pre>
-            <th:block cn:filter="first">
-                <th:block th:if="${false}">Should not contain this as the test is false.</th:block>
-                <th:block th:if="${true}">Should contain this as the test is true.</th:block>
-                <th:block th:test="${true}">Shouldn't contain this as the previous condition matched</th:block>
-            </th:block>
+            <span th:choose="">
+                <span th:when="${false}">Should not contain this as the test is false.</span>
+                <span th:when="${true}">Should contain this as the test is true.</span>
+                <span th:otherwise="">Shouldn't contain this as the previous condition matched</span>
+            </span>
         </th:block>
     </body>
 </html>

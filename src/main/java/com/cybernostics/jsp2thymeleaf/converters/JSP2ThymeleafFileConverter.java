@@ -11,13 +11,16 @@ import com.cybernostics.jsp2thymeleaf.api.common.TokenisedFile;
 import com.cybernostics.jsp2thymeleaf.api.elements.ScopedJSPConverters;
 import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
 import static com.cybernostics.jsp2thymeleaf.converters.ConverterScanner.scanForConverters;
+import com.cybernostics.jsp2thymeleaf.parser.DomBlockCleaner;
 import com.cybernostics.jsp2thymeleaf.parser.JSP2ThymeleafTransformerListener;
+import static com.cybernostics.jsp2thymeleaf.parser.XMLDocumentWriter.write;
 import java.io.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.jdom2.Document;
 
 /**
  *
@@ -58,7 +61,12 @@ public class JSP2ThymeleafFileConverter
             parsedElementListener.setShowBanner(showBanner);
             walker.walk(parsedElementListener, documentContext);
 
-            parsedElementListener.write(new FileOutputStream(toWrite));
+            final Document document = parsedElementListener.getDocument();
+            if (document.hasRootElement())
+            {
+                DomBlockCleaner.clean(document.getRootElement());
+                write(document, new FileOutputStream(toWrite));
+            }
 
             jsp2ThymeleafErrorCollector.add(parsedElementListener.getProblems());
         } catch (FileNotFoundException ex)

@@ -4,16 +4,16 @@
         <title>Thymeleaf Fragment Definition</title>
     </head>
     <body>
-    <th:block th:fragment="content">
-        <h3>forTokens</h3>
-        <pre>&lt;c:forTokens var="item" delims="," items="fat,cat,sat,mat"&gt;
+        <th:block th:fragment="content">
+            <h3>forTokens</h3>
+            <pre>&lt;c:forTokens var="item" delims="," items="fat,cat,sat,mat"&gt;
 This is item \${item}&lt;br/&gt;
 &lt;/c:forTokens&gt;</pre>
-        <th:block th:each="item : ${#strings.split('fat,cat,sat,mat',',')">
-            This is item
-            <span th:text="${item}" />
-            <br />
+            <span th:each="item : ${#strings.split('fat,cat,sat,mat',',')">
+                This is item
+                <span th:text="${item}" />
+                <br />
+            </span>
         </th:block>
-    </th:block>
-</body>
+    </body>
 </html>

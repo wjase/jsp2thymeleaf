@@ -26,13 +26,9 @@ import static com.cybernostics.jsp2thymeleaf.api.elements.ScopedJSPConverters.de
 import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
 import com.cybernostics.jsp2thymeleaf.api.exception.JSPNodeException;
 import com.cybernostics.jsp2thymeleaf.api.util.MapUtils;
-import com.cybernostics.jsp2thymeleaf.api.util.NoEscapeXMLOutputter;
 import com.cybernostics.jsp2thymeleaf.api.util.PrefixedName;
 import static com.cybernostics.jsp2thymeleaf.api.util.PrefixedName.prefixedNameFor;
 import com.cybernostics.jsp2thymeleaf.converters.jsp.JSPDirectiveConverterSource;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -55,9 +51,6 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.jdom2.Text;
-import org.jdom2.output.Format;
-import org.jdom2.output.support.AbstractXMLOutputProcessor;
-import org.jdom2.output.support.FormatStack;
 
 /**
  *
@@ -67,6 +60,11 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
 {
 
     private Document doc = new Document();
+
+    public Document getDocument()
+    {
+        return doc;
+    }
     private Element currentElement;
     private JSPDirectiveConverterSource jspDirectives = new JSPDirectiveConverterSource();
     protected ELExpressionConverter expressionConverter = new ELExpressionConverter();
@@ -88,30 +86,6 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     public List<JSP2ThymeLeafException> getProblems()
     {
         return problems;
-    }
-
-    public void write(OutputStream outputStream)
-    {
-        NoEscapeXMLOutputter out = new NoEscapeXMLOutputter(
-                Format.getPrettyFormat()
-                        .setEscapeStrategy(ch -> false)
-                        .setLineSeparator(NEWLINE)
-                        .setOmitDeclaration(true));
-        out.setXMLOutputProcessor(new AbstractXMLOutputProcessor()
-        {
-            @Override
-            protected void attributeEscapedEntitiesFilter(Writer out, FormatStack fstack, String value) throws IOException
-            {
-                write(out, value);
-            }
-        });
-        try
-        {
-            out.output(doc, outputStream);
-        } catch (IOException ex)
-        {
-            Logger.getLogger(JSP2ThymeleafTransformerListener.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     @Override

@@ -4,9 +4,9 @@
         <title>Thymeleaf Fragment Definition</title>
     </head>
     <body>
-        <th:block th:fragment="content">
-            <th:block th:if="${!param.amount}" id="barry">Some text here</th:block>
-            <th:block th:if="${#strings.contains(name,searchString)}">Boo</th:block>
-        </th:block>
+        <span th:fragment="content">
+            <span th:if="${!param.amount}" id="barry">Some text here</span>
+            <span th:if="${#strings.contains(name,searchString)}">Boo</span>
+        </span>
     </body>
 </html>

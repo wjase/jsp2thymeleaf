@@ -4,12 +4,12 @@
         <title>Thymeleaf Fragment Definition</title>
     </head>
     <body>
-        <th:block th:fragment="content">
-            <th:block th:each="anItem,statusVar : ${itemlist}">First Form here</th:block>
-            <th:block th:each="anItem : ${itemlist}">Second Form here</th:block>
-            <th:block th:each="anotherItem : ${#numbers.sequence(1,10,2)}">Third Form here</th:block>
-            <th:block th:each="anotherItem : ${#numbers.sequence(1,10)}">Fourth Form here</th:block>
-            <th:block th:each="anotherItem,statusVar : ${#numbers.sequence(1,10,2)}">Fifth Form here</th:block>
-        </th:block>
+        <span th:fragment="content">
+            <span th:each="anItem,statusVar : ${itemlist}">First Form here</span>
+            <span th:each="anItem : ${itemlist}">Second Form here</span>
+            <span th:each="anotherItem : ${#numbers.sequence(1,10,2)}">Third Form here</span>
+            <span th:each="anotherItem : ${#numbers.sequence(1,10)}">Fourth Form here</span>
+            <span th:each="anotherItem,statusVar : ${#numbers.sequence(1,10,2)}">Fifth Form here</span>
+        </span>
     </body>
 </html>

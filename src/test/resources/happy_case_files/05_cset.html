@@ -4,10 +4,10 @@
         <title>Thymeleaf Fragment Definition</title>
     </head>
     <body>
-        <th:block th:fragment="content">
+        <span th:fragment="content">
             <th:span th:if="${sessionScope.put('salary',2000*2)}" />
             <th:span th:if="${pageScope.put('salary',2000*2)}" />
             <th:span th:if="${applicationScope.put('salary',2000*2)}" />
-        </th:block>
+        </span>
     </body>
 </html>
