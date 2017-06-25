@@ -5,6 +5,7 @@
  */
 package com.cybernostics.jsp2thymeleaf;
 
+import com.cybernostics.jsp2thymeleaf.api.common.dom.DomWalker;
 import com.cybernostics.jsp2thymeleaf.parser.DomBlockCleaner;
 import com.cybernostics.jsp2thymeleaf.parser.XMLDocumentWriter;
 import java.io.ByteArrayOutputStream;
@@ -65,7 +66,8 @@ public class DomBlockCleanerTest
         File expectedFile = new File(uncleanedFile.getAbsolutePath().replaceAll(".html$", "_clean.html"));
         Document expectedDom = readXML(expectedFile).get();
         Document domToProcess = readXML(uncleanedFile).get();
-        DomBlockCleaner.clean(domToProcess);
+        DomWalker blockCleaner = new DomWalker(DomBlockCleaner.get());
+        blockCleaner.walk(domToProcess.getRootElement());
         assertThat(expectedFile.getName() + ":\n", domToProcess, matchesBody(expectedDom));
     }
 

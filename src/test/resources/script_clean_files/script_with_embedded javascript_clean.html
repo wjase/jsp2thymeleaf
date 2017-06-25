@@ -1,0 +1,16 @@
+<!DOCTYPE html SYSTEM "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Thymeleaf Fragment Definition</title>
+    </head>
+    <body>
+        <span th:fragment="content">
+            <script th:inline="javascript">
+                function doSomething() {
+                    var someVar = /*[[${someVar}]]*/"SomeVar";
+                    var someOtherVar = /*[[${valueHere}]]*/"";
+                }
+            </script>
+        </span>
+    </body>
+</html>

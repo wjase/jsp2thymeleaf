@@ -63,13 +63,15 @@ public class JSP2ThymeleafHappyCaseTest
 
             TokenisedFile jspFileTok = new TokenisedFile(jspFile.toPath(), rootPath);
 
-            File randomOutFile = File.createTempFile("happyCaseTest", ".jsp");
+            File randomOutFile = File.createTempFile("happyCaseTest", ".html");
 
             final List<JSP2ThymeLeafException> errors = jSP2Thymeleaf.convert(jspFileTok, randomOutFile, new ScopedJSPConverters());
             assertThat(errors, is(empty()));
             final String convertedContent = FileUtils.readFileToString(randomOutFile, Charset.defaultCharset());
             LOG.info("\n" + convertedContent);
-            assertThat(expectedThymeleafFileContent.getName() + ":\n", convertedContent.replaceAll("\\s+", " ").trim(), is(expectedContent.replaceAll("\\s+", " ").trim()));
+            assertThat(expectedThymeleafFileContent.getName() + ":\n",
+                    convertedContent.replaceAll("\\s+", " ").trim(),
+                    is(expectedContent.replaceAll("\\s+", " ").trim()));
         } catch (IOException ex)
         {
             Logger.getLogger(JSP2ThymeleafHappyCaseTest.class.getName()).log(Level.SEVERE, null, ex);
@@ -100,7 +102,7 @@ public class JSP2ThymeleafHappyCaseTest
         return Arrays.asList(file.listFiles())
                 .stream()
                 .filter(it -> it.getName().contains("jsp"))
-                //                .filter(it -> it.getName().contains("cout"))
+                //                .filter(it -> it.getName().contains("javascript"))
                 .sorted();
     }
 }

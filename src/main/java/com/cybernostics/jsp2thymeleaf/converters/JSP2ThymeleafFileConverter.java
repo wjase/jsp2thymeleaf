@@ -7,7 +7,9 @@ package com.cybernostics.jsp2thymeleaf.converters;
 
 import com.cybernostics.jsp.parser.JSPParser;
 import com.cybernostics.jsp2thymeleaf.JSP2ThymeleafConfiguration;
+import com.cybernostics.jsp2thymeleaf.ScriptInlineSpanConverter;
 import com.cybernostics.jsp2thymeleaf.api.common.TokenisedFile;
+import com.cybernostics.jsp2thymeleaf.api.common.dom.DomWalker;
 import com.cybernostics.jsp2thymeleaf.api.elements.ScopedJSPConverters;
 import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
 import static com.cybernostics.jsp2thymeleaf.converters.ConverterScanner.scanForConverters;
@@ -64,7 +66,9 @@ public class JSP2ThymeleafFileConverter
             final Document document = parsedElementListener.getDocument();
             if (document.hasRootElement())
             {
-                DomBlockCleaner.clean(document.getRootElement());
+                DomWalker docwalker = new DomWalker(DomBlockCleaner.get(),
+                        ScriptInlineSpanConverter.get());
+                docwalker.walk(document.getRootElement());
                 write(document, new FileOutputStream(toWrite));
             }
 
