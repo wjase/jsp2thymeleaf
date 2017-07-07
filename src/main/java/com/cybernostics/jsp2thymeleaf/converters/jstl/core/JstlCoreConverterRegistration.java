@@ -11,11 +11,11 @@ import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.XMLNS;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.converterFor;
 import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter.ignore;
-import static com.cybernostics.jsp2thymeleaf.api.elements.NewAttributeBuilder.named;
-import static com.cybernostics.jsp2thymeleaf.api.elements.NewAttributeBuilder.namedTH;
 import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
 import static com.cybernostics.jsp2thymeleaf.api.util.AlternateFormatStrings.chooseFormat;
 import static com.cybernostics.jsp2thymeleaf.api.util.AlternateFormatStrings.constant;
+import static com.cybernostics.jsp2thymeleaf.api.elements.NewAttributeBuilder.newAttributeNamed;
+import static com.cybernostics.jsp2thymeleaf.api.elements.NewAttributeBuilder.newTHAttributeNamed;
 
 /**
  *
@@ -28,25 +28,24 @@ public class JstlCoreConverterRegistration implements ConverterRegistration
     public void run()
     {
         final TagConverterSource jstlCoreTaglibConverterSource = new TagConverterSource()
-                .withConverters(
-                        converterFor("if")
+                .withConverters(converterFor("if")
                                 .withNewName("block", TH)
                                 .renamesAttribute("test", "if", TH),
                         converterFor("choose")
                                 .withNewName("block", TH)
-                                .addsAttributes(named("choose", TH)
+                                .addsAttributes(newAttributeNamed("choose", TH)
                                         .withValue(constant(""))),
                         converterFor("when")
                                 .withNewName("block", TH)
                                 .renamesAttribute("test", "when", TH),
                         converterFor("otherwise")
                                 .withNewName("block", TH)
-                                .addsAttributes(namedTH("otherwise")
+                                .addsAttributes(newTHAttributeNamed("otherwise")
                                         .withValue(constant(""))),
                         converterFor("out")
                                 .withNewName("span", XMLNS)
                                 .removesAtributes("value", "var", "scope", "context")
-                                .addsAttributes(namedTH("text")
+                                .addsAttributes(newTHAttributeNamed("text")
                                         .withValue(chooseFormat(
                                                 "#setValue('%{var}','%{scope|page}',%{value})",
                                                 "%{value}"))
@@ -56,20 +55,20 @@ public class JstlCoreConverterRegistration implements ConverterRegistration
                         converterFor("forTokens")
                                 .withNewName("block", TH)
                                 .removesAtributes("var", "varStatus", "items", "delims")
-                                .addsAttributes(namedTH("each")
+                                .addsAttributes(newTHAttributeNamed("each")
                                         .withValue(chooseFormat(
                                                 "%{var}%{varStatus|!addCommaPrefix} : ${#strings.split('%{items}'%{delims|!singleQuoted,addCommaPrefix})"))),
                         converterFor("forEach")
                                 .withNewName("block", TH)
                                 .removesAtributes("var", "begin", "end", "step", "varStatus", "items", "step")
-                                .addsAttributes(namedTH("each")
+                                .addsAttributes(newTHAttributeNamed("each")
                                         .withValue(chooseFormat(
                                                 "%{var}%{varStatus|!addCommaPrefix} : %{items}",
                                                 "%{var}%{varStatus|!addCommaPrefix} : ${#numbers.sequence(%{begin},%{end}%{step|!addCommaPrefix})}"))),
                         converterFor("set")
                                 .withNewName("span")
                                 .removesAtributes("var", "scope", "value")
-                                .addsAttributes(named("if", TH)
+                                .addsAttributes(newAttributeNamed("if", TH)
                                         .withValue(
                                                 chooseFormat("${%{scope|page}Scope.put('%{var}',%{value!stripEL})}")
                                         )),
@@ -80,7 +79,7 @@ public class JstlCoreConverterRegistration implements ConverterRegistration
                                 })
                                 .withNewName("span", XMLNS)
                                 .removesAtributes("value", "var", "scope", "context")
-                                .addsAttributes(namedTH("text")
+                                .addsAttributes(newTHAttributeNamed("text")
                                         .withValue(chooseFormat(
                                                 "${%{scope|page}Params.put('%{var}',@{_<_~%{context}_>_%{value}_<_(%{_childAtts!kvMap})_>_})",
                                                 "@{_<_~%{context}_>_%{value}_<_(%{_childAtts!kvMap})_>_}"))
