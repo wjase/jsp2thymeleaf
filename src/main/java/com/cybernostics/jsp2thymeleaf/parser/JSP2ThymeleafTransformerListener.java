@@ -53,34 +53,39 @@ import org.jdom2.Namespace;
 import org.jdom2.Text;
 
 /**
- *
+ * This class is a visitor for the parsed JSP element stream which creates
+ * new Thymeleaf JDom element(s) for each JSP node element visited.
+ * 
  * @author jason
  */
 public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener implements JSPElementNodeConverter
 {
 
-    private Document doc = new Document();
-
-    public Document getDocument()
-    {
-        return doc;
-    }
-    private Element currentElement;
-    private JSPDirectiveConverterSource jspDirectives = new JSPDirectiveConverterSource();
-    protected ELExpressionConverter expressionConverter = new ELExpressionConverter();
-    private final Logger logger = Logger.getLogger(JSP2ThymeleafTransformerListener.class.getName());
     private static final String THYMELEAF_DTD = "http://thymeleaf.org/dtd/xhtml-strict-thymeleaf.dtd";
-    private final Pattern whitespace = Pattern.compile("^\\s+$");
+    private final Logger logger = Logger.getLogger(JSP2ThymeleafTransformerListener.class.getName());
+    
+    private Document thymeleafDoc = new Document();
     private final List<JSP2ThymeLeafException> problems = new ArrayList<>();
-    private ScopedJSPConverters converters;
+    private ScopedJSPConverters scopedJspConverters;
+
+    private Element currentElement;
+    
+    private JSPDirectiveConverterSource jspDirectiveConverterSource = new JSPDirectiveConverterSource();
+    protected ELExpressionConverter expressionConverter = new ELExpressionConverter();
+
+    private final Pattern whitespace = Pattern.compile("^\\s+$");
     private boolean showBanner;
 
     public static final String NEWLINE = System.getProperty("line.separator");
 
-    public JSP2ThymeleafTransformerListener(ScopedJSPConverters converters)
+    public JSP2ThymeleafTransformerListener(ScopedJSPConverters scopedJspConverters)
     {
         showBanner = false;
-        this.converters = converters;
+        this.scopedJspConverters = scopedJspConverters;
+    }
+
+    public Document getDocument() {
+        return thymeleafDoc;
     }
 
     public List<JSP2ThymeLeafException> getProblems()
@@ -123,9 +128,9 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     @Override
     public void exitJspDocument(JSPParser.JspDocumentContext ctx)
     {
-        if (doc.hasRootElement())
+        if (thymeleafDoc.hasRootElement())
         {
-            Element rootElement = doc.getRootElement();
+            Element rootElement = thymeleafDoc.getRootElement();
             namespacesFor(rootElement).stream().filter(it -> !it.getPrefix().equals(rootElement.getNamespace().getPrefix())).forEach(ns -> rootElement.addNamespaceDeclaration(ns));
         }
     }
@@ -137,7 +142,7 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
         {
             super.enterJspExpression(ctx);
             Element expression = new Element("span", XMLNS);
-            expression.setAttribute("text", expressionConverter.convert(ctx.getText(), converters), TH);
+            expression.setAttribute("text", expressionConverter.convert(ctx.getText(), scopedJspConverters), TH);
             expression.removeNamespaceDeclaration(XMLNS);
             addContent(expression);
         } catch (ParseException ex)
@@ -180,7 +185,7 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     private JSPElementNodeConverter converterForNode(JSPParser.JspElementContext node)
     {
         PrefixedName domTag = prefixedNameFor(node.name.getText());
-        Optional<JSPNodeConverterSource> converterSource1 = getConverterSource(domTag);
+        Optional<JSPNodeConverterSource> converterSource1 = convertersForDomTag(domTag);
         final Optional<JSPElementNodeConverter> converterFor = converterSource1
                 .orElseGet(missingTaglib(domTag, node))
                 .converterFor(node);
@@ -203,7 +208,7 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
 
         try
         {
-            final Optional<JSPDirectiveConverter> converter = jspDirectives.converterFor(ctx);
+            final Optional<JSPDirectiveConverter> converter = jspDirectiveConverterSource.converterFor(ctx);
             final List<Content> content = converter.get().process(ctx, this);
             addContent(content);
         } catch (JSP2ThymeLeafException exception)
@@ -218,12 +223,12 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     {
         DocType dt = new DocType(ctx.dtdElementName().getText(), THYMELEAF_DTD);
 
-        doc.setDocType(dt);
+        thymeleafDoc.setDocType(dt);
     }
 
-    private Optional<JSPNodeConverterSource> getConverterSource(PrefixedName domTag)
+    private Optional<JSPNodeConverterSource> convertersForDomTag(PrefixedName domTag)
     {
-        return converters.forPrefix(domTag.getPrefix());
+        return scopedJspConverters.forPrefix(domTag.getPrefix());
     }
 
     private Supplier<JSPNodeConverterSource> missingTaglib(PrefixedName domTag, JSPParser.JspElementContext node)
@@ -330,7 +335,7 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     private List<Content> elementWithDocTypeIfNeeded(final Element htmlElement)
     {
 
-        if (doc.getDocType() != null)
+        if (thymeleafDoc.getDocType() != null)
         {
             return Arrays.asList(htmlElement);
         }
@@ -358,7 +363,7 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     public List<Content> process(JSPParser.JspElementContext node, JSPElementNodeConverter context)
     {
         final PrefixedName prefixedName = PrefixedName.prefixedNameFor(node.name.getText());
-        final Optional<JSPNodeConverterSource> converter = converters.forPrefix(prefixedName.getPrefix());
+        final Optional<JSPNodeConverterSource> converter = scopedJspConverters.forPrefix(prefixedName.getPrefix());
         return converter.get().converterFor(node).get().process(node, this);
     }
 
@@ -375,7 +380,7 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
             {
                 content = rootContentFor(content);
                 currentElement = (Element) content.stream().filter(JSP2ThymeleafTransformerListener::isHtmlElement).findFirst().get();
-                doc.addContent(content);
+                thymeleafDoc.addContent(content);
 
             } else
             {
@@ -432,13 +437,13 @@ public class JSP2ThymeleafTransformerListener extends JSPParserBaseListener impl
     @Override
     public ScopedJSPConverters getScopedConverters()
     {
-        return converters;
+        return scopedJspConverters;
     }
 
     @Override
     public void setScopedConverters(ScopedJSPConverters scopedConverters)
     {
-        converters = scopedConverters;
+        scopedJspConverters = scopedConverters;
     }
 
 }

@@ -22,15 +22,25 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toMap;
 
 /**
- *
+ * Application entry point for JSP2Thymeleaf when called from
+ * the command line.
  * @author jason
  */
 public class JSP2Thymeleaf
 {
 
-    public static final Logger logger = Logger.getLogger(JSP2Thymeleaf.class.getName());
+    public static void main(String[] args) {
+        final JSP2ThymeleafConfiguration config = JSP2ThymeleafConfiguration.parse(args);
+        final JSP2Thymeleaf jsP2Thymeleaf = new JSP2Thymeleaf(config);
+        jsP2Thymeleaf.run();
+    }
+
+
+    private static final Logger logger = Logger.getLogger(JSP2Thymeleaf.class.getName());
     private JSP2ThymeleafConfiguration configuration;
     private Set<TokenisedFile> alreadyProcessed = new TreeSet<>();
+    private List<JSP2ThymeLeafException> exceptions;
+    private JSP2ThymeleafFileConverter converter;
 
     public JSP2Thymeleaf(JSP2ThymeleafConfiguration configuration)
     {
@@ -38,16 +48,6 @@ public class JSP2Thymeleaf
         converter = new JSP2ThymeleafFileConverter(configuration);
         converter.setShowBanner(configuration.isShowBanner());
         exceptions = new ArrayList<>();
-
-    }
-    private List<JSP2ThymeLeafException> exceptions;
-    private JSP2ThymeleafFileConverter converter;
-
-    public static void main(String[] args)
-    {
-        final JSP2ThymeleafConfiguration config = JSP2ThymeleafConfiguration.parse(args);
-        final JSP2Thymeleaf jsP2Thymeleaf = new JSP2Thymeleaf(config);
-        jsP2Thymeleaf.run();
     }
 
     public List<JSP2ThymeLeafException> run()

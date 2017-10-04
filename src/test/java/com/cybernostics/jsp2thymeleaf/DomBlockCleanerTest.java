@@ -6,8 +6,8 @@
 package com.cybernostics.jsp2thymeleaf;
 
 import com.cybernostics.jsp2thymeleaf.api.common.dom.DomWalker;
-import com.cybernostics.jsp2thymeleaf.parser.DomBlockCleaner;
 import com.cybernostics.jsp2thymeleaf.parser.XMLDocumentWriter;
+import com.cybernostics.jsp2thymeleaf.postprocessors.DomBlockCleaner;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;

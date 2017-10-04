@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf;
+package com.cybernostics.jsp2thymeleaf.postprocessors;
 
 import static com.cybernostics.jsp2thymeleaf.api.common.Namespaces.TH;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class ScriptInlineSpanConverter extends ScriptContextAwareDomVisitor
     {
         super.onNewLeaf(c);
 
-        Optional<Element> maybeScript = tryElementWithName("script", c);
+        Optional<Element> maybeScript = asContentWithTagName("script", c);
         maybeScript.ifPresent((Element script) ->
         {
             List<? extends Content> children = script.removeContent();
@@ -48,7 +48,7 @@ public class ScriptInlineSpanConverter extends ScriptContextAwareDomVisitor
             while (!children.isEmpty())
             {
                 Content child = children.remove(0);
-                Optional<Element> trySpan = tryElementWithName("span", child);
+                Optional<Element> trySpan = asContentWithTagName("span", child);
                 if (trySpan.isPresent())
                 {
                     Element span = trySpan.get();

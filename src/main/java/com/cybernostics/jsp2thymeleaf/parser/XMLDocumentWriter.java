@@ -83,7 +83,7 @@ public class XMLDocumentWriter
             {
                 if (showNamespaces == ShowNamespaces.SHOWNS)
                 {
-                    super.printNamespace(out, fstack, ns); //To change body of generated methods, choose Tools | Templates.
+                    super.printNamespace(out, fstack, ns); 
                 }
             }
 
@@ -212,14 +212,13 @@ public class XMLDocumentWriter
             protected void write(Writer out, String str) throws IOException
             {
 //                str = str.replaceAll("\n", "");
-                super.write(out, str); //To change body of generated methods, choose Tools | Templates.
+                super.write(out, str); 
             }
 
             @Override
             public void process(Writer out, Format format, Text text) throws IOException
             {
-
-                super.process(out, format, text); //To change body of generated methods, choose Tools | Templates.
+                super.process(out, format, text); 
             }
 
             @Override
@@ -233,7 +232,7 @@ public class XMLDocumentWriter
                     format.setLineSeparator(LineSeparator.NONE);
                     format.setIndent("");
                 }
-                super.process(out, format, element); //To change body of generated methods, choose Tools | Templates.
+                super.process(out, format, element); 
                 if (noNewline)
                 {
                     format.setLineSeparator(savedNewline);

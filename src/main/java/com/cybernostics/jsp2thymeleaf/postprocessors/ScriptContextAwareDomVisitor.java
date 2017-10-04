@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf;
+package com.cybernostics.jsp2thymeleaf.postprocessors;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -31,7 +31,7 @@ public class ScriptContextAwareDomVisitor extends StructuredDomVisitor implement
     @Override
     protected void onExitLeaf(Content c)
     {
-        tryElementWithName("script", c).ifPresent(s -> currentScriptContext = Optional.empty());
+        asContentWithTagName("script", c).ifPresent(s -> currentScriptContext = Optional.empty());
     }
 
     @Override
@@ -39,7 +39,7 @@ public class ScriptContextAwareDomVisitor extends StructuredDomVisitor implement
     {
         if (!currentScriptContext.isPresent())
         {
-            currentScriptContext = tryElementWithName("script", c);
+            currentScriptContext = asContentWithTagName("script", c);
         }
     }
 

@@ -21,25 +21,25 @@ public class JSPTransformer extends JSPParserBaseListener
     @Override
     public void enterJspElement(JSPParser.JspElementContext ctx)
     {
-        super.enterJspElement(ctx); //To change body of generated methods, choose Tools | Templates.
+        super.enterJspElement(ctx); 
     }
 
     @Override
     public void enterScriptlet(JSPParser.ScriptletContext ctx)
     {
-        super.enterScriptlet(ctx); //To change body of generated methods, choose Tools | Templates.
+        super.enterScriptlet(ctx); 
     }
 
     @Override
     public void enterJspDirective(JSPParser.JspDirectiveContext ctx)
     {
-        super.enterJspDirective(ctx); //To change body of generated methods, choose Tools | Templates.
+        super.enterJspDirective(ctx); 
     }
 
     @Override
     public void enterJspDocument(JSPParser.JspDocumentContext ctx)
     {
-        super.enterJspDocument(ctx); //To change body of generated methods, choose Tools | Templates.
+        super.enterJspDocument(ctx); 
     }
 
 }

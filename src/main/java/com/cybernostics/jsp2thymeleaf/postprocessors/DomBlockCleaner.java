@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf.parser;
+package com.cybernostics.jsp2thymeleaf.postprocessors;
 
-import com.cybernostics.jsp2thymeleaf.ScriptContextAwareDomVisitor;
+import com.cybernostics.jsp2thymeleaf.postprocessors.ScriptContextAwareDomVisitor;
 import static com.cybernostics.jsp2thymeleaf.api.common.Namespaces.XMLNS;
 import static com.cybernostics.jsp2thymeleaf.api.util.SetUtils.setOf;
 import java.util.List;

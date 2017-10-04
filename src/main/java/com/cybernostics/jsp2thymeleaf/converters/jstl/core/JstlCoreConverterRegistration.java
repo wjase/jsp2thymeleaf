@@ -14,8 +14,8 @@ import static com.cybernostics.jsp2thymeleaf.api.elements.JspTagElementConverter
 import com.cybernostics.jsp2thymeleaf.api.elements.TagConverterSource;
 import static com.cybernostics.jsp2thymeleaf.api.util.AlternateFormatStrings.chooseFormat;
 import static com.cybernostics.jsp2thymeleaf.api.util.AlternateFormatStrings.constant;
-import static com.cybernostics.jsp2thymeleaf.api.elements.NewAttributeBuilder.newAttributeNamed;
-import static com.cybernostics.jsp2thymeleaf.api.elements.NewAttributeBuilder.newTHAttributeNamed;
+import static com.cybernostics.jsp2thymeleaf.api.elements.AttributeCreator.newAttributeNamed;
+import static com.cybernostics.jsp2thymeleaf.api.elements.AttributeCreator.newTHAttributeNamed;
 
 /**
  *
@@ -44,7 +44,7 @@ public class JstlCoreConverterRegistration implements ConverterRegistration
                                         .withValue(constant(""))),
                         converterFor("out")
                                 .withNewName("span", XMLNS)
-                                .removesAtributes("value", "var", "scope", "context")
+                                .removesAttributes("value", "var", "scope", "context")
                                 .addsAttributes(newTHAttributeNamed("text")
                                         .withValue(chooseFormat(
                                                 "#setValue('%{var}','%{scope|page}',%{value})",
@@ -54,20 +54,20 @@ public class JstlCoreConverterRegistration implements ConverterRegistration
                                 .withNewTextContent("%{value!humanReadable}"),
                         converterFor("forTokens")
                                 .withNewName("block", TH)
-                                .removesAtributes("var", "varStatus", "items", "delims")
+                                .removesAttributes("var", "varStatus", "items", "delims")
                                 .addsAttributes(newTHAttributeNamed("each")
                                         .withValue(chooseFormat(
                                                 "%{var}%{varStatus|!addCommaPrefix} : ${#strings.split('%{items}'%{delims|!singleQuoted,addCommaPrefix})"))),
                         converterFor("forEach")
                                 .withNewName("block", TH)
-                                .removesAtributes("var", "begin", "end", "step", "varStatus", "items", "step")
+                                .removesAttributes("var", "begin", "end", "step", "varStatus", "items", "step")
                                 .addsAttributes(newTHAttributeNamed("each")
                                         .withValue(chooseFormat(
                                                 "%{var}%{varStatus|!addCommaPrefix} : %{items}",
                                                 "%{var}%{varStatus|!addCommaPrefix} : ${#numbers.sequence(%{begin},%{end}%{step|!addCommaPrefix})}"))),
                         converterFor("set")
                                 .withNewName("span")
-                                .removesAtributes("var", "scope", "value")
+                                .removesAttributes("var", "scope", "value")
                                 .addsAttributes(newAttributeNamed("if", TH)
                                         .withValue(
                                                 chooseFormat("${%{scope|page}Scope.put('%{var}',%{value!stripEL})}")
@@ -78,7 +78,7 @@ public class JstlCoreConverterRegistration implements ConverterRegistration
                                     return nodeAndContext.paramsBy("name", "value");
                                 })
                                 .withNewName("span", XMLNS)
-                                .removesAtributes("value", "var", "scope", "context")
+                                .removesAttributes("value", "var", "scope", "context")
                                 .addsAttributes(newTHAttributeNamed("text")
                                         .withValue(chooseFormat(
                                                 "${%{scope|page}Params.put('%{var}',@{_<_~%{context}_>_%{value}_<_(%{_childAtts!kvMap})_>_})",

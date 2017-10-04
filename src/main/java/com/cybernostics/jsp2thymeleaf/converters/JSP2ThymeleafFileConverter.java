@@ -7,13 +7,13 @@ package com.cybernostics.jsp2thymeleaf.converters;
 
 import com.cybernostics.jsp.parser.JSPParser;
 import com.cybernostics.jsp2thymeleaf.JSP2ThymeleafConfiguration;
-import com.cybernostics.jsp2thymeleaf.ScriptInlineSpanConverter;
+import com.cybernostics.jsp2thymeleaf.postprocessors.ScriptInlineSpanConverter;
 import com.cybernostics.jsp2thymeleaf.api.common.TokenisedFile;
 import com.cybernostics.jsp2thymeleaf.api.common.dom.DomWalker;
 import com.cybernostics.jsp2thymeleaf.api.elements.ScopedJSPConverters;
 import com.cybernostics.jsp2thymeleaf.api.exception.JSP2ThymeLeafException;
 import static com.cybernostics.jsp2thymeleaf.converters.ConverterScanner.scanForConverters;
-import com.cybernostics.jsp2thymeleaf.parser.DomBlockCleaner;
+import com.cybernostics.jsp2thymeleaf.postprocessors.DomBlockCleaner;
 import com.cybernostics.jsp2thymeleaf.parser.JSP2ThymeleafTransformerListener;
 import static com.cybernostics.jsp2thymeleaf.parser.XMLDocumentWriter.write;
 import java.io.*;

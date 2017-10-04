@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.cybernostics.jsp2thymeleaf;
+package com.cybernostics.jsp2thymeleaf.postprocessors;
 
 import java.util.Optional;
 import java.util.Stack;
@@ -68,7 +68,7 @@ public class StructuredDomVisitor implements Consumer<Content>
     {
     }
 
-    protected Optional<Element> tryElementWithName(String name, Content c)
+    protected Optional<Element> asContentWithTagName(String name, Content c)
     {
         if (c instanceof Element)
         {
